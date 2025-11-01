@@ -1,5 +1,7 @@
 package org.ivan.pokmanager.ui.screens
 
+import androidx.compose.foundation.Image
+import org.ivan.pokmanager.R
 import org.ivan.pokmanager.ui.theme.PokeColors
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -14,6 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -69,15 +73,12 @@ fun Login(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        // TODO: Descomentar cuando tengas la imagen
-                        /* Image(
-                            painter = painterResource(id = R.drawable.icono_japan),
+                        Image(
+                            painter = painterResource(id = R.drawable.logo_app),
                             contentDescription = "Logo PokeManager",
-                            modifier = Modifier
-                                .size(160.dp)
-                                .padding(10.dp),
-                            contentScale = ContentScale.Fit
-                        ) */
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
                     }
                 }
 
@@ -309,7 +310,7 @@ fun Login(
                 TextButton(onClick = { /* Acción de recuperar contraseña */ }) {
                     Text(
                         "¿Olvidaste tu contraseña?",
-                        color = Color.White,
+                        color = Color.Red,
                         fontSize = 14.sp
                     )
                 }
