@@ -353,7 +353,7 @@ fun Register(
                 TextButton(onClick = onBackClick) {
                     Text(
                         "¿Ya tienes cuenta? Inicia sesión",
-                        color = Color.White,
+                        color = Color.Red,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium
                     )
