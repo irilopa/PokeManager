@@ -1,8 +1,6 @@
-package org.ivan.pokmanager.ui.screens
+package org.ivan.pokmanager.presentation.ui.screens
 
 import androidx.compose.foundation.Image
-import org.ivan.pokmanager.R
-import org.ivan.pokmanager.ui.theme.PokeColors
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,20 +22,22 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
+import androidx.lifecycle.viewmodel.compose.viewModel
+import org.ivan.pokmanager.R
+import org.ivan.pokmanager.presentation.ui.theme.PokeColors
+import org.ivan.pokmanager.presentation.viewmodel.LoginScreenViewModel
 
 @Composable
 fun Login(
-    onLoginClick: (String, String) -> Unit = { _, _ -> },
-    onRegisterClick: () -> Unit = {}
+    loginScreenViewModel: LoginScreenViewModel = viewModel()
 ) {
-    var username by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    val username by loginScreenViewModel.username.collectAsState()
+    val password by loginScreenViewModel.password.collectAsState()
+
     var passwordVisible by remember { mutableStateOf(false) }
     var showError by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
 
-    // Gradiente de fondo estilo Pokémon
     val gradientBrush = Brush.verticalGradient(
         colors = listOf(
             PokeColors.PokeRed,
@@ -59,7 +59,7 @@ fun Login(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                // Logo o imagen de Pokémon
+                // Logo
                 Card(
                     modifier = Modifier
                         .size(180.dp)
@@ -73,6 +73,7 @@ fun Login(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
+
                         Image(
                             painter = painterResource(id = R.drawable.logo_app),
                             contentDescription = "Logo PokeManager",
@@ -84,7 +85,7 @@ fun Login(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Título
+
                 Text(
                     text = "PokeManager",
                     fontSize = 32.sp,
@@ -104,7 +105,7 @@ fun Login(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // Card contenedor para los campos
+
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -120,9 +121,9 @@ fun Login(
                     ) {
                         // Campo de usuario
                         OutlinedTextField(
-                            value = username,
+                            value = username, // Viene del ViewModel
                             onValueChange = {
-                                username = it
+                                loginScreenViewModel.setUsername(it) // Actualiza el ViewModel
                                 showError = false
                             },
                             label = { Text("Nombre de Entrenador") },
@@ -145,11 +146,11 @@ fun Login(
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // Campo de contraseña
+
                         OutlinedTextField(
                             value = password,
                             onValueChange = {
-                                password = it
+                                loginScreenViewModel.setPassword(it)
                                 showError = false
                             },
                             label = { Text("Contraseña") },
@@ -191,7 +192,7 @@ fun Login(
                             )
                         )
 
-                        // Mensaje de error
+
                         if (showError) {
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
@@ -204,7 +205,7 @@ fun Login(
 
                         Spacer(modifier = Modifier.height(24.dp))
 
-                        // Botón de Iniciar Sesión
+
                         Button(
                             onClick = {
                                 when {
@@ -225,7 +226,7 @@ fun Login(
                                     }
 
                                     else -> {
-                                        onLoginClick(username, password)
+
                                     }
                                 }
                             },
@@ -251,14 +252,15 @@ fun Login(
 
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        // Botones secundarios
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            // Botón de Registro
                             OutlinedButton(
-                                onClick = onRegisterClick,
+                                onClick = {
+
+                                },
                                 modifier = Modifier
                                     .weight(1f)
                                     .height(48.dp),
@@ -276,11 +278,10 @@ fun Login(
                                 Text("Registro", fontSize = 14.sp)
                             }
 
-                            // Botón de Limpiar
+
                             OutlinedButton(
                                 onClick = {
-                                    username = ""
-                                    password = ""
+                                    loginScreenViewModel.clear()
                                     passwordVisible = false
                                     showError = false
                                 },
@@ -302,12 +303,9 @@ fun Login(
                             }
                         }
                     }
-
                 }
-
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Texto de ayuda
                 TextButton(onClick = { /* Acción de recuperar contraseña */ }) {
                     Text(
                         "¿Olvidaste tu contraseña?",

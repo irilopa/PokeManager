@@ -1,4 +1,4 @@
-package org.ivan.pokmanager.ui.theme
+package org.ivan.pokmanager.presentation.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

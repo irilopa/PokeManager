@@ -1,8 +1,8 @@
-package org.ivan.pokmanager.ui.screens
+package org.ivan.pokmanager.presentation.ui.screens
 
 import androidx.compose.foundation.Image
 import org.ivan.pokmanager.R
-import org.ivan.pokmanager.ui.theme.PokeColors
+import org.ivan.pokmanager.presentation.ui.theme.PokeColors
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState

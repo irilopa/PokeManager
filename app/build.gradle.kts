@@ -42,6 +42,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.compose.material.icons.extended)
     // Comentado temporalmente hasta implementar el backend
     // implementation(platform(libs.firebase.bom))
