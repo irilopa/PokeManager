@@ -3,20 +3,20 @@ package org.ivan.pokmanager.presentation.ui.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,289 +28,172 @@ import org.ivan.pokmanager.presentation.ui.theme.PokeColors
 import org.ivan.pokmanager.presentation.viewmodel.LoginScreenViewModel
 
 @Composable
-fun Login(
-    loginScreenViewModel: LoginScreenViewModel = viewModel()
+fun LoginScreen(
+    onLoginSuccess: () -> Unit = {}, // Acción al loguearse con éxito
+    onRegisterClick: () -> Unit = {}, // Acción para ir a registrarse
+    viewModel: LoginScreenViewModel = viewModel()
 ) {
-    val username by loginScreenViewModel.username.collectAsState()
-    val password by loginScreenViewModel.password.collectAsState()
+    // 1. Recolección de estado del ViewModel
+    val username by viewModel.username.collectAsState()
+    val password by viewModel.password.collectAsState()
 
+    // 2. Estado local de la UI
     var passwordVisible by remember { mutableStateOf(false) }
     var showError by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
 
-    val gradientBrush = Brush.verticalGradient(
-        colors = listOf(
-            PokeColors.PokeRed,
-            PokeColors.PokeWhite
-        )
-    )
+    val primaryColor = PokeColors.PokeRed
 
-    Scaffold { innerPadding ->
-        Box(
+    Scaffold(
+        // Opcional: Puedes poner un TopAppBar aquí si quieres,
+        // pero las pantallas de Login suelen ser limpias.
+    ) { innerPadding ->
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(gradientBrush)
+                .background(Color.White) // Fondo limpio
                 .padding(innerPadding)
+                .verticalScroll(rememberScrollState()) // Scroll si la pantalla es pequeña
+                .padding(horizontal = 32.dp, vertical = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center // Centra el contenido verticalmente
         ) {
-            Column(
+
+            // LOGO
+            Image(
+                painter = painterResource(id = R.drawable.logo_app),
+                contentDescription = "Logo PokeManager",
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                // Logo
-                Card(
-                    modifier = Modifier
-                        .size(180.dp)
-                        .shadow(8.dp, RoundedCornerShape(90.dp)),
-                    shape = RoundedCornerShape(90.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = PokeColors.PokeWhite
-                    )
-                ) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
+                    .size(120.dp)
+                    .padding(bottom = 16.dp)
+            )
 
-                        Image(
-                            painter = painterResource(id = R.drawable.logo_app),
-                            contentDescription = "Logo PokeManager",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
-                    }
-                }
+            // TÍTULO
+            Text(
+                text = "¡Bienvenido de nuevo!",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = primaryColor
+            )
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Gestiona tu equipo Pokémon",
+                fontSize = 14.sp,
+                color = Color.Gray
+            )
 
+            Spacer(modifier = Modifier.height(32.dp))
 
-                Text(
-                    text = "PokeManager",
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = PokeColors.PokeYellow,
-                    style = MaterialTheme.typography.headlineLarge
+            // --- FORMULARIO ---
+
+            // 1. Campo: USUARIO / ENTRENADOR
+            OutlinedTextField(
+                value = username,
+                onValueChange = {
+                    viewModel.setUsername(it)
+                    showError = false
+                },
+                label = { Text("Entrenador") },
+                leadingIcon = {
+                    Icon(Icons.Default.Person, contentDescription = null, tint = primaryColor)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = primaryColor,
+                    unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f)
                 )
+            )
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 2. Campo: CONTRASEÑA
+            OutlinedTextField(
+                value = password,
+                onValueChange = {
+                    viewModel.setPassword(it)
+                    showError = false
+                },
+                label = { Text("Contraseña") },
+                leadingIcon = {
+                    Icon(Icons.Default.Lock, contentDescription = null, tint = primaryColor)
+                },
+                // Lógica para mostrar/ocultar contraseña
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    val image = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                    val description = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña"
+
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(imageVector = image, contentDescription = description, tint = Color.Gray)
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = primaryColor,
+                    unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f)
+                )
+            )
+
+            // MENSAJE DE ERROR
+            if (showError) {
                 Spacer(modifier = Modifier.height(8.dp))
-
                 Text(
-                    text = "Gestiona tu equipo Pokémon",
+                    text = errorMessage,
+                    color = primaryColor,
                     fontSize = 14.sp,
-                    color = Color.White,
-                    style = MaterialTheme.typography.bodyMedium
+                    modifier = Modifier.fillMaxWidth()
                 )
+            }
 
-                Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
-
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .shadow(4.dp, RoundedCornerShape(16.dp)),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color.White.copy(alpha = 0.95f)
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier.padding(20.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        // Campo de usuario
-                        OutlinedTextField(
-                            value = username, // Viene del ViewModel
-                            onValueChange = {
-                                loginScreenViewModel.setUsername(it) // Actualiza el ViewModel
-                                showError = false
-                            },
-                            label = { Text("Nombre de Entrenador") },
-                            placeholder = { Text("Introduzca un nombre") },
-                            leadingIcon = {
-                                Icon(
-                                    Icons.Default.Person,
-                                    contentDescription = "Usuario",
-                                    tint = PokeColors.PokeRed
-                                )
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            shape = RoundedCornerShape(12.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = PokeColors.PokeRed,
-                                unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f)
-                            )
-                        )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-
-                        OutlinedTextField(
-                            value = password,
-                            onValueChange = {
-                                loginScreenViewModel.setPassword(it)
-                                showError = false
-                            },
-                            label = { Text("Contraseña") },
-                            placeholder = { Text("••••••••") },
-                            leadingIcon = {
-                                Icon(
-                                    Icons.Default.Lock,
-                                    contentDescription = "Contraseña",
-                                    tint = PokeColors.PokeRed
-                                )
-                            },
-                            visualTransformation = if (passwordVisible)
-                                VisualTransformation.None
-                            else
-                                PasswordVisualTransformation(),
-                            trailingIcon = {
-                                IconButton(onClick = {
-                                    passwordVisible = !passwordVisible
-                                }) {
-                                    Icon(
-                                        imageVector = if (passwordVisible)
-                                            Icons.Default.Visibility
-                                        else
-                                            Icons.Default.VisibilityOff,
-                                        contentDescription = if (passwordVisible)
-                                            "Ocultar contraseña"
-                                        else
-                                            "Mostrar contraseña",
-                                        tint = PokeColors.PokeBlue
-                                    )
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            shape = RoundedCornerShape(12.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = PokeColors.PokeRed,
-                                unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f)
-                            )
-                        )
-
-
-                        if (showError) {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = errorMessage,
-                                color = PokeColors.PokeRed,
-                                fontSize = 12.sp,
-                                modifier = Modifier.fillMaxWidth()
-                            )
+            // BOTÓN DE INICIAR SESIÓN
+            Button(
+                onClick = {
+                    when {
+                        username.isBlank() -> {
+                            showError = true
+                            errorMessage = "Ingresa tu nombre de entrenador"
                         }
-
-                        Spacer(modifier = Modifier.height(24.dp))
-
-
-                        Button(
-                            onClick = {
-                                when {
-                                    username.isBlank() -> {
-                                        showError = true
-                                        errorMessage = "Ingresa tu nombre de entrenador"
-                                    }
-
-                                    password.isBlank() -> {
-                                        showError = true
-                                        errorMessage = "Ingresa tu contraseña"
-                                    }
-
-                                    password.length < 8 -> {
-                                        showError = true
-                                        errorMessage =
-                                            "La contraseña debe tener al menos 8 caracteres"
-                                    }
-
-                                    else -> {
-
-                                    }
-                                }
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(50.dp),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = PokeColors.PokeRed
-                            )
-                        ) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.Login,
-                                contentDescription = "Iniciar Sesión"
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            Text(
-                                "Iniciar Sesión",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                        password.isBlank() -> {
+                            showError = true
+                            errorMessage = "Ingresa tu contraseña"
                         }
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            OutlinedButton(
-                                onClick = {
-
-                                },
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(48.dp),
-                                shape = RoundedCornerShape(12.dp),
-                                colors = ButtonDefaults.outlinedButtonColors(
-                                    contentColor = PokeColors.PokeBlue
-                                )
-                            ) {
-                                Icon(
-                                    Icons.Default.PersonAdd,
-                                    contentDescription = "Registro",
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Spacer(Modifier.width(4.dp))
-                                Text("Registro", fontSize = 14.sp)
-                            }
-
-
-                            OutlinedButton(
-                                onClick = {
-                                    loginScreenViewModel.clear()
-                                    passwordVisible = false
-                                    showError = false
-                                },
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(48.dp),
-                                shape = RoundedCornerShape(12.dp),
-                                colors = ButtonDefaults.outlinedButtonColors(
-                                    contentColor = Color.Gray
-                                )
-                            ) {
-                                Icon(
-                                    Icons.Default.Clear,
-                                    contentDescription = "Limpiar",
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Spacer(Modifier.width(4.dp))
-                                Text("Limpiar", fontSize = 14.sp)
-                            }
+                        else -> {
+                            // Llamamos a la lógica del ViewModel
+                            viewModel.login()
+                            onLoginSuccess() // Callback de navegación
                         }
                     }
-                }
-                Spacer(modifier = Modifier.height(16.dp))
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = primaryColor)
+            ) {
+                Text("Iniciar Sesión", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            }
 
-                TextButton(onClick = { /* Acción de recuperar contraseña */ }) {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // BOTÓN IR A REGISTRO
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text("¿No tienes cuenta?", fontSize = 14.sp, color = Color.Gray)
+                TextButton(onClick = onRegisterClick) {
                     Text(
-                        "¿Olvidaste tu contraseña?",
-                        color = Color.Red,
-                        fontSize = 14.sp
+                        "Regístrate",
+                        color = primaryColor,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
@@ -320,6 +203,6 @@ fun Login(
 
 @Preview(showBackground = true)
 @Composable
-fun LoginPreview() {
-    Login()
+fun LoginScreenPreview() {
+    LoginScreen()
 }
