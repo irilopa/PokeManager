@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class RegisterScreenViewModel : ViewModel() {
-     private val _name = MutableStateFlow("")
+    private val _name = MutableStateFlow("")
     private val _email = MutableStateFlow("")
     private val _birthdate = MutableStateFlow("")
     private val _password = MutableStateFlow("")
@@ -33,22 +33,17 @@ class RegisterScreenViewModel : ViewModel() {
         _password.value = password
     }
 
-    // --- 4. Lógica de Negocio ---
-
     fun registerUser() {
-        // Aquí obtienes los valores actuales de los flujos
         val currentName = _name.value
         val currentEmail = _email.value
         val currentBirthdate = _birthdate.value
         val currentPassword = _password.value
 
-        // TODO: Aquí conectarás con tu base de datos (MySQL o PostgreSQL)
-        // Por ahora, simulamos el registro imprimiendo en consola
         println("--- Iniciando Registro ---")
         println("Nombre: $currentName")
         println("Email: $currentEmail")
         println("F. Nacimiento: $currentBirthdate")
-        println("Password: $currentPassword") // (Solo para debug, nunca imprimir en prod)
+        println("Password: $currentPassword")
         println("--- Guardando en Base de Datos... ---")
     }
 }

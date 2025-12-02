@@ -29,37 +29,30 @@ import org.ivan.pokmanager.presentation.viewmodel.LoginScreenViewModel
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit = {}, // Acción al loguearse con éxito
-    onRegisterClick: () -> Unit = {}, // Acción para ir a registrarse
+    onLoginSuccess: () -> Unit = {},
+    onRegisterClick: () -> Unit = {},
     viewModel: LoginScreenViewModel = viewModel()
 ) {
-    // 1. Recolección de estado del ViewModel
     val username by viewModel.username.collectAsState()
     val password by viewModel.password.collectAsState()
 
-    // 2. Estado local de la UI
     var passwordVisible by remember { mutableStateOf(false) }
     var showError by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
 
     val primaryColor = PokeColors.PokeRed
 
-    Scaffold(
-        // Opcional: Puedes poner un TopAppBar aquí si quieres,
-        // pero las pantallas de Login suelen ser limpias.
-    ) { innerPadding ->
+    Scaffold {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White) // Fondo limpio
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState()) // Scroll si la pantalla es pequeña
+                .background(Color.White)
+                .padding(it)
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 32.dp, vertical = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center // Centra el contenido verticalmente
+            verticalArrangement = Arrangement.Center
         ) {
-
-            // LOGO
             Image(
                 painter = painterResource(id = R.drawable.logo_app),
                 contentDescription = "Logo PokeManager",
@@ -68,7 +61,6 @@ fun LoginScreen(
                     .padding(bottom = 16.dp)
             )
 
-            // TÍTULO
             Text(
                 text = "¡Bienvenido de nuevo!",
                 fontSize = 24.sp,
@@ -84,9 +76,6 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // --- FORMULARIO ---
-
-            // 1. Campo: USUARIO / ENTRENADOR
             OutlinedTextField(
                 value = username,
                 onValueChange = {
@@ -108,7 +97,6 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 2. Campo: CONTRASEÑA
             OutlinedTextField(
                 value = password,
                 onValueChange = {
@@ -119,14 +107,17 @@ fun LoginScreen(
                 leadingIcon = {
                     Icon(Icons.Default.Lock, contentDescription = null, tint = primaryColor)
                 },
-                // Lógica para mostrar/ocultar contraseña
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     val image = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
                     val description = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña"
 
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(imageVector = image, contentDescription = description, tint = Color.Gray)
+                        Icon(
+                            imageVector = image,
+                            contentDescription = description,
+                            tint = Color.Gray
+                        )
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -139,7 +130,6 @@ fun LoginScreen(
                 )
             )
 
-            // MENSAJE DE ERROR
             if (showError) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -152,7 +142,6 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // BOTÓN DE INICIAR SESIÓN
             Button(
                 onClick = {
                     when {
@@ -160,14 +149,15 @@ fun LoginScreen(
                             showError = true
                             errorMessage = "Ingresa tu nombre de entrenador"
                         }
+
                         password.isBlank() -> {
                             showError = true
                             errorMessage = "Ingresa tu contraseña"
                         }
+
                         else -> {
-                            // Llamamos a la lógica del ViewModel
                             viewModel.login()
-                            onLoginSuccess() // Callback de navegación
+                            onLoginSuccess()
                         }
                     }
                 },
@@ -182,7 +172,6 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // BOTÓN IR A REGISTRO
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center

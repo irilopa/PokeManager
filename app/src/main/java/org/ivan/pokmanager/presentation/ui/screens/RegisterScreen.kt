@@ -22,7 +22,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-// Importación necesaria para integrar el ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.ivan.pokmanager.R
 import org.ivan.pokmanager.presentation.ui.theme.PokeColors
@@ -32,19 +31,15 @@ import org.ivan.pokmanager.presentation.viewmodel.RegisterScreenViewModel
 @Composable
 fun RegisterScreen(
     onBackClick: () -> Unit = {},
-    // Inyección automática del ViewModel
     viewModel: RegisterScreenViewModel = viewModel()
 ) {
-    // --- 1. Recolección de Estado desde el ViewModel ---
     val name by viewModel.name.collectAsState()
     val email by viewModel.email.collectAsState()
     val password by viewModel.password.collectAsState()
     val birthdate by viewModel.birthdate.collectAsState()
 
-    // --- 2. Estado local para la UI (Errores y visibilidad) ---
     var showError by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
-    // Variable opcional por si quisieras hacer un botón de "ver contraseña" en el futuro
     var isPasswordVisible by remember { mutableStateOf(false) }
 
     val primaryColor = PokeColors.PokeRed
@@ -74,12 +69,10 @@ fun RegisterScreen(
                 .fillMaxSize()
                 .background(Color.White)
                 .padding(innerPadding)
-                .verticalScroll(rememberScrollState()) // Hace que la pantalla sea scrollable
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 32.dp, vertical = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-
-            // LOGO
             Image(
                 painter = painterResource(id = R.drawable.logo_app),
                 contentDescription = "Logo PokeManager",
@@ -88,7 +81,6 @@ fun RegisterScreen(
                     .padding(bottom = 16.dp)
             )
 
-            // TÍTULO
             Text(
                 text = "¡Únete a la Aventura!",
                 fontSize = 24.sp,
@@ -98,9 +90,6 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // --- FORMULARIO ---
-
-            // 1. Campo: NOMBRE
             OutlinedTextField(
                 value = name,
                 onValueChange = {
@@ -123,7 +112,6 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 2. Campo: EMAIL
             OutlinedTextField(
                 value = email,
                 onValueChange = {
@@ -137,7 +125,6 @@ fun RegisterScreen(
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
-                // Configura el teclado para mostrar @
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = primaryColor,
@@ -147,7 +134,6 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 3. Campo: FECHA DE NACIMIENTO
             OutlinedTextField(
                 value = birthdate,
                 onValueChange = {
@@ -162,7 +148,6 @@ fun RegisterScreen(
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
-                // Teclado numérico para facilitar la entrada de fechas
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = primaryColor,
@@ -172,7 +157,6 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 4. Campo: CONTRASEÑA
             OutlinedTextField(
                 value = password,
                 onValueChange = {
@@ -186,7 +170,6 @@ fun RegisterScreen(
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
-                // Oculta el texto con puntos
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -195,7 +178,6 @@ fun RegisterScreen(
                 )
             )
 
-            // MENSAJE DE ERROR
             if (showError) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -208,33 +190,35 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // BOTÓN DE REGISTRO
             Button(
                 onClick = {
-                    // Validación simple en la UI antes de llamar al ViewModel
                     when {
                         name.isBlank() -> {
                             showError = true
                             errorMessage = "Ingresa tu nombre"
                         }
+
                         email.isBlank() -> {
                             showError = true
                             errorMessage = "Ingresa tu email"
                         }
+
                         !email.contains("@") || !email.contains(".") -> {
                             showError = true
                             errorMessage = "Email inválido"
                         }
+
                         birthdate.isBlank() -> {
                             showError = true
                             errorMessage = "Ingresa tu fecha de nacimiento"
                         }
+
                         password.length < 6 -> {
                             showError = true
                             errorMessage = "La contraseña debe tener al menos 6 caracteres"
                         }
+
                         else -> {
-                            // Llamada a la lógica de negocio
                             viewModel.registerUser()
                         }
                     }
@@ -250,7 +234,6 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // BOTÓN DE NAVEGACIÓN (IR A LOGIN)
             TextButton(onClick = onBackClick) {
                 Text(
                     "¿Ya tienes cuenta? Inicia sesión",
