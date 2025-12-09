@@ -1,8 +1,7 @@
 package org.ivan.pokmanager
 
+import org.junit.Assert.assertEquals
 import org.junit.Test
-
-import org.junit.Assert.*
 
 class ExampleUnitTest {
     @Test
