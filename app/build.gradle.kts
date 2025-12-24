@@ -12,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId = "org.ivan.pokmanager"
-        minSdk = 21
+        minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -42,6 +42,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.compose.material.icons.extended)
     // Comentado temporalmente hasta implementar el backend

@@ -19,6 +19,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -167,10 +168,19 @@ fun RegisterScreen(
                 leadingIcon = {
                     Icon(Icons.Default.Lock, contentDescription = null, tint = primaryColor)
                 },
+                trailingIcon = {
+                    IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+                        Icon(
+                            imageVector = if (isPasswordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                            contentDescription = if (isPasswordVisible) "Ocultar contraseña" else "Mostrar contraseña",
+                            tint = primaryColor
+                        )
+                    }
+                },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
-                visualTransformation = PasswordVisualTransformation(),
+                visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = primaryColor,
@@ -187,9 +197,50 @@ fun RegisterScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
             }
+            Spacer(modifier = Modifier.height(32.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+
+            ) {
+                Checkbox(
+                    checked = false,
+                    onCheckedChange = {}
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Al registrarte aceptas nuestra Política de Privacidad",
+                    color = primaryColor
+                )
+            }
 
             Spacer(modifier = Modifier.height(32.dp))
-
+            /**
+             * Botón de registro encargado de validar los datos introducidos por el usuario
+             * antes de iniciar el proceso de creación de cuenta.
+             *
+             * La validación se realiza en el cliente con el objetivo de:
+             * - Mejorar la experiencia de usuario (feedback inmediato).
+             * - Evitar llamadas innecesarias al ViewModel con datos inválidos.
+             *
+             * Reglas de validación aplicadas:
+             * - El nombre no puede estar vacío.
+             * - El email no puede estar vacío y debe contener los caracteres básicos
+             *   '@' y '.' (validación sintáctica simple, no exhaustiva).
+             * - La fecha de nacimiento no puede estar vacía.
+             * - La contraseña debe tener una longitud mínima de 8 caracteres.
+             *
+             * En caso de error:
+             * - Se activa el estado `showError`.
+             * - Se muestra un mensaje descriptivo en `errorMessage`.
+             *
+             * Si todas las validaciones son correctas:
+             * - Se delega el registro de usuario al ViewModel mediante `registerUser()`,
+             *   respetando el patrón MVVM y la separación de responsabilidades.
+             *
+             * Nota:
+             * Esta validación no sustituye la validación en backend, que sigue siendo
+             * obligatoria por motivos de seguridad.
+             */
             Button(
                 onClick = {
                     when {
@@ -213,9 +264,9 @@ fun RegisterScreen(
                             errorMessage = "Ingresa tu fecha de nacimiento"
                         }
 
-                        password.length < 6 -> {
+                        password.length < 8 -> {
                             showError = true
-                            errorMessage = "La contraseña debe tener al menos 6 caracteres"
+                            errorMessage = "La contraseña debe tener al menos 8 caracteres"
                         }
 
                         else -> {
