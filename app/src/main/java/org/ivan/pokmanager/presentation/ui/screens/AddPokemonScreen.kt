@@ -3,6 +3,7 @@ package org.ivan.pokmanager.presentation.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -20,33 +21,28 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import org.ivan.pokmanager.presentation.ui.theme.PokeColors
+import org.ivan.pokmanager.presentation.viewmodel.AddPokemonScreenViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddPokemonScreen(onBackClick: () -> Unit = {}) {
+fun AddPokemonScreen(
+    onBackClick: () -> Unit = {},
+    viewModel: AddPokemonScreenViewModel = viewModel()
+) {
+    val name by viewModel.name.collectAsState()
+    val primaryType by viewModel.primaryType.collectAsState()
+    val secondaryType by viewModel.secondaryType.collectAsState()
+    val level by viewModel.level.collectAsState()
+    val hp by viewModel.hp.collectAsState()
+    val attack by viewModel.attack.collectAsState()
+    val notes by viewModel.notes.collectAsState()
 
-    // --- 1. ESTADOS DEL FORMULARIO ---
-    var name by remember { mutableStateOf("") }
-    var isNameError by remember { mutableStateOf(false) } // Para validar si está vacío
+    var isNameError by remember { mutableStateOf(false) }
+    val pokemonTypes = viewModel.pokemonTypes
 
-    var primaryType by remember { mutableStateOf("") }
-    var secondaryType by remember { mutableStateOf("") } // Opcional
-
-    // Valores por defecto como String para el TextField, luego se convierten
-    var level by remember { mutableStateOf("1") }
-    var hp by remember { mutableStateOf("") }
-    var attack by remember { mutableStateOf("") }
-    var notes by remember { mutableStateOf("") }
-
-    // Lista de tipos
-    val pokemonTypes = listOf(
-        "Planta", "Fuego", "Agua", "Eléctrico", "Hielo", "Lucha", "Veneno", "Tierra",
-        "Roca", "Volador", "Psíquico", "Bicho", "Dragón", "Siniestro", "Fantasma",
-        "Acero", "Hada", "Normal"
-    )
-
-    // Color principal (Usa PokeColors.PokeRed si lo tienes importado)
-    val primaryColor = Color(0xFFEF5350) // Un rojo estilo Pokémon
+    val primaryColor = PokeColors.PokeRed
 
     Scaffold(
         topBar = {
@@ -68,12 +64,12 @@ fun AddPokemonScreen(onBackClick: () -> Unit = {}) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White)
+                .background(PokeColors.PokeWhite)
                 .padding(innerPadding)
-                .verticalScroll(rememberScrollState()) // Habilita scroll vertical
-                .padding(24.dp), // Margen general
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 32.dp, vertical = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp) // Espacio entre elementos
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
             // --- 2. ENCABEZADO VISUAL ---
@@ -87,7 +83,7 @@ fun AddPokemonScreen(onBackClick: () -> Unit = {}) {
                 text = "¡Añade un nuevo Pokémon a tu equipo!",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.DarkGray
+                color = PokeColors.PokeDarkGray
             )
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
@@ -98,21 +94,39 @@ fun AddPokemonScreen(onBackClick: () -> Unit = {}) {
             OutlinedTextField(
                 value = name,
                 onValueChange = {
-                    name = it
+                    viewModel.setName(it)
                     isNameError = false
                 },
                 label = { Text("Nombre del Pokémon") },
                 placeholder = { Text("Ej. Pikachu") },
-                leadingIcon = { Icon(Icons.Default.Pets, contentDescription = null) },
+                leadingIcon = {
+                    Icon(
+                        Icons.Default.Pets,
+                        contentDescription = null,
+                        tint = primaryColor
+                    )
+                },
                 isError = isNameError,
                 supportingText = {
-                    if (isNameError) Text("El nombre es obligatorio", color = MaterialTheme.colorScheme.error)
+                    if (isNameError) Text(
+                        "El nombre es obligatorio",
+                        color = MaterialTheme.colorScheme.error
+                    )
                 },
                 trailingIcon = {
-                    if (isNameError) Icon(Icons.Default.Warning, "Error", tint = MaterialTheme.colorScheme.error)
+                    if (isNameError) Icon(
+                        Icons.Default.Warning,
+                        "Error",
+                        tint = MaterialTheme.colorScheme.error
+                    )
                 },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = primaryColor,
+                    unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f)
+                )
             )
 
             // 2️⃣ Tipo Principal (Obligatorio)
@@ -120,62 +134,90 @@ fun AddPokemonScreen(onBackClick: () -> Unit = {}) {
                 label = "Tipo Principal",
                 options = pokemonTypes,
                 selectedOption = primaryType,
-                onOptionSelected = { primaryType = it }
+                onOptionSelected = { viewModel.setPrimaryTypeSelected(it) }
             )
 
             // 3️⃣ Tipo Secundario (Opcional)
             PokemonDropdown(
                 label = "Tipo Secundario (Opcional)",
                 options = listOf("Ninguno") + pokemonTypes, // Añadimos opción de vacío
-                selectedOption = secondaryType,
-                onOptionSelected = { secondaryType = if (it == "Ninguno") "" else it }
+                selectedOption = secondaryType.ifBlank { "" },
+                onOptionSelected = {
+                    val selected = if (it == "Ninguno") "" else it
+                    viewModel.setSecondaryTypeSelected(selected)
+                }
             )
 
             // 4️⃣ Nivel (Numérico 1-100)
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
                 OutlinedTextField(
                     value = level,
                     onValueChange = { newValue ->
                         // Solo permite números y longitud máx 3
                         if (newValue.all { it.isDigit() } && newValue.length <= 3) {
-                            // Lógica extra para limitar a 100 si quieres, o dejar validar al final
-                            level = newValue
+                            viewModel.setLevel(newValue)
                         }
                     },
                     label = { Text("Nivel") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.weight(1f) // Ocupa la mitad
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = primaryColor,
+                        unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f)
+                    )
                 )
 
                 // 5️⃣ PS (Puntos de Salud)
                 OutlinedTextField(
                     value = hp,
-                    onValueChange = { if (it.all { char -> char.isDigit() }) hp = it },
+                    onValueChange = { if (it.all { char -> char.isDigit() }) viewModel.setHp(it) },
                     label = { Text("PS") },
                     placeholder = { Text("10") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = primaryColor,
+                        unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f)
+                    )
                 )
             }
 
             // 6️⃣ Ataque
             OutlinedTextField(
                 value = attack,
-                onValueChange = { if (it.all { char -> char.isDigit() }) attack = it },
+                onValueChange = { if (it.all { char -> char.isDigit() }) viewModel.setAttack(it) },
                 label = { Text("Ataque") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
-                modifier = Modifier.fillMaxWidth()
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Next
+                ),
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = primaryColor,
+                    unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f)
+                )
             )
 
             // 7️⃣ Notas (Opcional, Multilinea)
             OutlinedTextField(
                 value = notes,
-                onValueChange = { notes = it },
+                onValueChange = { viewModel.setNotes(it) },
                 label = { Text("Notas adicionales") },
                 placeholder = { Text("¿Dónde lo capturaste? ¿Es shiny?") },
                 minLines = 3,
                 maxLines = 5,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = primaryColor,
+                    unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f)
+                )
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -202,12 +244,13 @@ fun AddPokemonScreen(onBackClick: () -> Unit = {}) {
                            )
                            viewModel.save(newPokemon)
                         */
-                        onBackClick() // Volver tras guardar
+                        onBackClick()
                     }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
+                shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = primaryColor)
             ) {
                 Text("Guardar Pokémon", fontSize = 18.sp)
@@ -225,7 +268,8 @@ fun PokemonDropdown(
     label: String,
     options: List<String>,
     selectedOption: String,
-    onOptionSelected: (String) -> Unit
+    onOptionSelected: (String) -> Unit,
+    primaryColor: Color = PokeColors.PokeRed
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -240,7 +284,11 @@ fun PokemonDropdown(
             readOnly = true,
             label = { Text(label) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(
+                focusedBorderColor = primaryColor,
+                unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f)
+            ),
+            shape = RoundedCornerShape(12.dp),
             modifier = Modifier
                 .menuAnchor()
                 .fillMaxWidth()
