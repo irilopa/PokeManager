@@ -4,9 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Scaffold
-import androidx.compose.ui.Modifier
+import androidx.navigation.compose.rememberNavController
+import org.ivan.pokmanager.presentation.ui.navigation.NavGraph
 import org.ivan.pokmanager.presentation.ui.theme.PokéManagerTheme
 
 class MainActivity : ComponentActivity() {
@@ -15,11 +14,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PokéManagerTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-
-                }
+                val navController = rememberNavController()
+                NavGraph(navController = navController)
             }
         }
     }
 }
-

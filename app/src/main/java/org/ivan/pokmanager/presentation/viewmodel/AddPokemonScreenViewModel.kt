@@ -3,6 +3,9 @@ package org.ivan.pokmanager.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import org.ivan.pokmanager.data.model.Pokemon
+import org.ivan.pokmanager.data.model.PokemonStats
+import org.ivan.pokmanager.data.model.repository.PokemonRepository
 
 class AddPokemonScreenViewModel : ViewModel() {
 
@@ -33,7 +36,6 @@ class AddPokemonScreenViewModel : ViewModel() {
     val hp = _hp.asStateFlow()
     val attack = _attack.asStateFlow()
     val notes = _notes.asStateFlow()
-
 
 
     fun setName(newName: String) {
@@ -73,6 +75,39 @@ class AddPokemonScreenViewModel : ViewModel() {
 
 
     fun savePokemon() {
+        val finalName = _name.value
+        // Convertimos Strings a Int de forma segura
+        val finalLevel = _level.value.toIntOrNull() ?: 1
+        val finalHp = _hp.value.toIntOrNull() ?: 10
+        val finalAttack = _attack.value.toIntOrNull() ?: 5
 
+        // Construimos el String de tipos "Fuego / Volador"
+        val typeString = if (_secondaryType.value.isNotBlank()) {
+            "${_primaryType.value} / ${_secondaryType.value}"
+        } else {
+            _primaryType.value
+        }
+        // 2. Creamos el objeto COMPLETO
+        val newPokemon = Pokemon(
+            pokedexNumber = (System.currentTimeMillis() / 1000).toInt(), // ID "único" basado en tiempo
+            name = finalName,
+            types = typeString,
+            description = "Pokémon registrado manualmente por el entrenador.", // Default
+            heightM = 0.0, // Default
+            weightKg = 0.0, // Default
+            stats = PokemonStats(
+                hp = finalHp,
+                attack = finalAttack,
+                defense = 0, // Default
+                specialAttack = 0, // Default
+                specialDefense = 0, // Default
+                speed = 0 // Default
+            ),
+            imageUrl = "",
+            moves = emptyList()
+        )
+
+        // 3. ¡Guardamos en la "BBDD"!
+        PokemonRepository.addPokemon(newPokemon)
     }
 }

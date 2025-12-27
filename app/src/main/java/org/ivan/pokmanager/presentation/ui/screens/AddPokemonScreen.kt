@@ -50,6 +50,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import org.ivan.pokmanager.data.model.Pokemon
+import org.ivan.pokmanager.presentation.ui.components.PokemonDropdown
 import org.ivan.pokmanager.presentation.ui.theme.PokeColors
 import org.ivan.pokmanager.presentation.viewmodel.AddPokemonScreenViewModel
 
@@ -116,8 +118,6 @@ fun AddPokemonScreen(
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-            // --- 3. CAMPOS DEL FORMULARIO ---
-
             // 1️⃣ Nombre (Obligatorio)
             OutlinedTextField(
                 value = name,
@@ -168,7 +168,7 @@ fun AddPokemonScreen(
             // 3️⃣ Tipo Secundario (Opcional)
             PokemonDropdown(
                 label = "Tipo Secundario (Opcional)",
-                options = listOf("Ninguno") + pokemonTypes, // Añadimos opción de vacío
+                options = listOf("Ninguno") + pokemonTypes,
                 selectedOption = secondaryType.ifBlank { "" },
                 onOptionSelected = {
                     val selected = if (it == "Ninguno") "" else it
@@ -250,28 +250,15 @@ fun AddPokemonScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- 4. BOTÓN PRINCIPAL ---
             Button(
                 onClick = {
-                    // --- VALIDACIÓN ---
+
                     if (name.isBlank()) {
                         isNameError = true
                     } else if (primaryType.isBlank()) {
                         // Aquí podrías mostrar un Toast o Snackbar pidiendo el tipo
                     } else {
-                        // TODO: Crear objeto Pokémon y guardar en BDD
-                        /*
-                           val newPokemon = Pokemon(
-                               name = name,
-                               type1 = primaryType,
-                               type2 = secondaryType,
-                               level = level.toIntOrNull() ?: 1,
-                               hp = hp.toIntOrNull() ?: 10,
-                               attack = attack.toIntOrNull() ?: 5,
-                               notes = notes
-                           )
-                           viewModel.save(newPokemon)
-                        */
+                        viewModel.savePokemon()
                         onBackClick()
                     }
                 },
@@ -287,57 +274,6 @@ fun AddPokemonScreen(
     }
 }
 
-/**
- * Componente reutilizable para los menús desplegables
- */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun PokemonDropdown(
-    label: String,
-    options: List<String>,
-    selectedOption: String,
-    onOptionSelected: (String) -> Unit,
-    primaryColor: Color = PokeColors.PokeRed
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = !expanded },
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        OutlinedTextField(
-            value = selectedOption,
-            onValueChange = {},
-            readOnly = true,
-            label = { Text(label) },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(
-                focusedBorderColor = primaryColor,
-                unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f)
-            ),
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier
-                .menuAnchor()
-                .fillMaxWidth()
-        )
-
-        ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            options.forEach { option ->
-                DropdownMenuItem(
-                    text = { Text(option) },
-                    onClick = {
-                        onOptionSelected(option)
-                        expanded = false
-                    }
-                )
-            }
-        }
-    }
-}
 
 @Preview(showBackground = true)
 @Composable
