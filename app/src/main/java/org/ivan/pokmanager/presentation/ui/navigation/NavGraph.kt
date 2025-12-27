@@ -1,14 +1,5 @@
 package org.ivan.pokmanager.presentation.ui.navigation
 
-import androidx.compose.runtime.Composable
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import org.ivan.pokmanager.presentation.ui.screens.AddPokemonScreen
-import org.ivan.pokmanager.presentation.ui.screens.LoginScreen
-import org.ivan.pokmanager.presentation.ui.screens.PokemonDetailScreen
-import org.ivan.pokmanager.presentation.ui.screens.PokemonListScreen
-import org.ivan.pokmanager.presentation.ui.screens.RegisterScreen
 /*
 @Composable
 fun NavGraph(startDestination: String = Screen.Login.route) {
