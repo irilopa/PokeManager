@@ -11,44 +11,24 @@ import org.ivan.pokmanager.presentation.ui.screens.RegisterScreen
 
 
 @Composable
-fun NavGraph(
-    navController: NavHostController,
-    startDestination: String = Screen.Login.route
-) {
-    NavHost(navController = navController, startDestination = startDestination) {
+fun NavGraph(navController: NavHostController) {
+    NavHost(
+        navController = navController,
+        startDestination = Screen.Login.route
+    ) {
         composable(Screen.Login.route) {
-            LoginScreen(
-                onLoginSuccess = {
-                    navController.navigate(Screen.PokemonList.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
-                    }
-                },
-                onRegisterClick = { navController.navigate(Screen.Register.route) }
-            )
+            LoginScreen(navController)
         }
-
         composable(Screen.Register.route) {
-            RegisterScreen(onBackClick = { navController.popBackStack() })
+            RegisterScreen(navController)
         }
-
         composable(Screen.PokemonList.route) {
-            PokemonListScreen(
-                onBackClick = { /* no-op o logout */ },
-                onAddPokemonClick = { navController.navigate(Screen.AddPokemon.route) }
-            )
+            PokemonListScreen(navController)
         }
-
         composable(Screen.AddPokemon.route) {
-            AddPokemonScreen(onBackClick = { navController.popBackStack() })
+            AddPokemonScreen(navController)
         }
-        // composable(Screen.EditPokemon.route) { backStackEntry ->
-        //     val pokemonId = backStackEntry.arguments?.getString("pokemonId")?.toIntOrNull()
-        //     if (pokemonId != null) {
-        //         AddPokemonScreen(
-        //             onBackClick = { navController.popBackStack() }
-        //             // pasa pokemonId al VM o estado para editar
-        //         )
-        //     }
-        // }
     }
 }
+
+

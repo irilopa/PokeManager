@@ -1,5 +1,6 @@
 package org.ivan.pokmanager.presentation.ui.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -47,14 +48,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import org.ivan.pokmanager.R
+import org.ivan.pokmanager.presentation.ui.navigation.Screen
 import org.ivan.pokmanager.presentation.ui.theme.PokeColors
 import org.ivan.pokmanager.presentation.viewmodel.LoginScreenViewModel
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit = {},
-    onRegisterClick: () -> Unit = {},
+    navController: NavController,
     viewModel: LoginScreenViewModel = viewModel()
 ) {
     val username by viewModel.username.collectAsState()
@@ -133,8 +136,10 @@ fun LoginScreen(
                 },
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
-                    val image = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
-                    val description = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña"
+                    val image =
+                        if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                    val description =
+                        if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña"
 
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(
@@ -181,7 +186,9 @@ fun LoginScreen(
 
                         else -> {
                             viewModel.login()
-                            onLoginSuccess()
+                            navController.navigate(Screen.PokemonList.route)
+
+
                         }
                     }
                 },
@@ -201,7 +208,7 @@ fun LoginScreen(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text("¿No tienes cuenta?", fontSize = 14.sp, color = Color.Gray)
-                TextButton(onClick = onRegisterClick) {
+                TextButton(onClick = { navController.navigate( Screen.Register.route )}) {
                     Text(
                         "Regístrate",
                         color = primaryColor,
@@ -214,8 +221,12 @@ fun LoginScreen(
     }
 }
 
+@SuppressLint("ViewModelConstructorInComposable")
 @Preview(showBackground = true)
 @Composable
 fun LoginScreenPreview() {
-    LoginScreen()
+    LoginScreen(
+        navController = rememberNavController(),
+        viewModel = LoginScreenViewModel()
+    )
 }

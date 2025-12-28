@@ -1,5 +1,6 @@
 package org.ivan.pokmanager.presentation.ui.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -54,14 +55,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import org.ivan.pokmanager.R
+import org.ivan.pokmanager.presentation.ui.navigation.Screen
 import org.ivan.pokmanager.presentation.ui.theme.PokeColors
 import org.ivan.pokmanager.presentation.viewmodel.RegisterScreenViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
-    onBackClick: () -> Unit = {},
+    navController: NavController,
     viewModel: RegisterScreenViewModel = viewModel()
 ) {
     val name by viewModel.name.collectAsState()
@@ -80,7 +84,7 @@ fun RegisterScreen(
             TopAppBar(
                 title = { Text("Registro de Entrenador") },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
+                    IconButton(onClick = {}) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Volver"
@@ -315,7 +319,7 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            TextButton(onClick = onBackClick) {
+            TextButton(onClick = {navController.navigate(Screen.Login.route)}) {
                 Text(
                     "¿Ya tienes cuenta? Inicia sesión",
                     color = primaryColor,
@@ -326,8 +330,12 @@ fun RegisterScreen(
     }
 }
 
+@SuppressLint("ViewModelConstructorInComposable")
 @Preview(showBackground = true)
 @Composable
 fun RegisterScreenPreview() {
-    RegisterScreen()
+    RegisterScreen(
+        navController = rememberNavController(),
+        viewModel = RegisterScreenViewModel()
+    )
 }

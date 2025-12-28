@@ -1,5 +1,6 @@
 package org.ivan.pokmanager.presentation.ui.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -23,14 +24,16 @@ import org.ivan.pokmanager.presentation.ui.theme.PokeColors
 import org.ivan.pokmanager.presentation.viewmodel.PokemonListViewModel
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import org.ivan.pokmanager.presentation.ui.components.ActionMenu
+import org.ivan.pokmanager.presentation.ui.navigation.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PokemonListScreen(
-    onBackClick: () -> Unit = {},
-    // Inyectamos el ViewModel
+    navController: NavController,
     viewModel: PokemonListViewModel = viewModel(),
-    // Añadimos un callback por si quieres navegar al formulario de añadir
     onAddPokemonClick: () -> Unit = {}
 ) {
     // 1. Observamos la lista del ViewModel
@@ -38,21 +41,18 @@ fun PokemonListScreen(
     val primaryColor = PokeColors.PokeRed
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Mi Equipo Pokémon") },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver"
-                        )
-                    }
+            ActionMenu(
+                title = "Mi Equipo Pokémon",
+                onAddPokemon = {
+                    navController.navigate(Screen.AddPokemon.route)
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = primaryColor,
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
-                )
+                onLogout = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.PokemonList.route) {
+                            inclusive = true
+                        }
+                    }
+                }
             )
         },
         floatingActionButton = {
@@ -74,14 +74,6 @@ fun PokemonListScreen(
                 .padding(horizontal = 32.dp, vertical = 24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(
-                text = "Mi Equipo Pokémon",
-                style = MaterialTheme.typography.headlineMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp
-                ),
-                color = primaryColor
-            )
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -144,8 +136,12 @@ fun PokemonCard(pokemon: Pokemon, viewModel: PokemonListViewModel, accentColor: 
     }
 }
 
+@SuppressLint("ViewModelConstructorInComposable")
 @Preview(showBackground = true)
 @Composable
 fun PokemonListScreenPreview() {
-    PokemonListScreen()
+    PokemonListScreen(
+        navController = rememberNavController(),
+        viewModel = PokemonListViewModel()
+    )
 }

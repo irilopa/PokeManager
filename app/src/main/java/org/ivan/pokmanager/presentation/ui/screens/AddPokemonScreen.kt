@@ -1,5 +1,6 @@
 package org.ivan.pokmanager.presentation.ui.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -50,6 +51,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import org.ivan.pokmanager.data.model.Pokemon
 import org.ivan.pokmanager.presentation.ui.components.PokemonDropdown
 import org.ivan.pokmanager.presentation.ui.theme.PokeColors
@@ -58,7 +61,7 @@ import org.ivan.pokmanager.presentation.viewmodel.AddPokemonScreenViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddPokemonScreen(
-    onBackClick: () -> Unit = {},
+    navController: NavController,
     viewModel: AddPokemonScreenViewModel = viewModel()
 ) {
     val name by viewModel.name.collectAsState()
@@ -79,7 +82,7 @@ fun AddPokemonScreen(
             TopAppBar(
                 title = { Text("Registrar Pokémon") },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
+                    IconButton(onClick = {}) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
                 },
@@ -259,7 +262,7 @@ fun AddPokemonScreen(
                         // Aquí podrías mostrar un Toast o Snackbar pidiendo el tipo
                     } else {
                         viewModel.savePokemon()
-                        onBackClick()
+
                     }
                 },
                 modifier = Modifier
@@ -275,8 +278,12 @@ fun AddPokemonScreen(
 }
 
 
+@SuppressLint("ViewModelConstructorInComposable")
 @Preview(showBackground = true)
 @Composable
 fun AddPokemonScreenPreview() {
-    AddPokemonScreen()
+    AddPokemonScreen(
+        navController = rememberNavController(),
+        viewModel = AddPokemonScreenViewModel()
+    )
 }
