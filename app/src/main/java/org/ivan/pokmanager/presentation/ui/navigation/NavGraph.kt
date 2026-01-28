@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import org.ivan.pokmanager.presentation.ui.screens.AddPokemonScreen
 import org.ivan.pokmanager.presentation.ui.screens.LoginScreen
+import org.ivan.pokmanager.presentation.ui.screens.PokemonDetailScreen
 import org.ivan.pokmanager.presentation.ui.screens.PokemonListScreen
 import org.ivan.pokmanager.presentation.ui.screens.RegisterScreen
 
@@ -28,7 +29,10 @@ fun NavGraph(navController: NavHostController) {
         composable(Screen.AddPokemon.route) {
             AddPokemonScreen(navController)
         }
+        composable(Screen.PokemonDetail.route) { backStackEntry ->
+            val idArg = backStackEntry.arguments?.getString("pokemonId")
+            val pokemonId = idArg?.toIntOrNull() ?: -1
+            PokemonDetailScreen(navController, pokemonId)
+        }
     }
 }
-
-

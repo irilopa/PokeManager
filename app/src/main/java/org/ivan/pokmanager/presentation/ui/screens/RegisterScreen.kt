@@ -84,7 +84,7 @@ fun RegisterScreen(
             TopAppBar(
                 title = { Text("Registro de Entrenador") },
                 navigationIcon = {
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = { navController.navigateUp() }) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Volver"
@@ -319,7 +319,7 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            TextButton(onClick = {navController.navigate(Screen.Login.route)}) {
+            TextButton(onClick = {navController.navigate(Screen.Login.route) { popUpTo(Screen.Login.route) { inclusive = true }}}) {
                 Text(
                     "¿Ya tienes cuenta? Inicia sesión",
                     color = primaryColor,

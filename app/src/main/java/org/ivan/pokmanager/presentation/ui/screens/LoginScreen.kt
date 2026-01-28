@@ -186,7 +186,9 @@ fun LoginScreen(
 
                         else -> {
                             viewModel.login()
-                            navController.navigate(Screen.PokemonList.route)
+                            navController.navigate(Screen.PokemonList.route) {
+                                popUpTo(Screen.Login.route) { inclusive = true }
+                            }
 
 
                         }

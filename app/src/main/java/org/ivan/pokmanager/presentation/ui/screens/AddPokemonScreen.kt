@@ -21,10 +21,7 @@ import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -53,7 +50,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import org.ivan.pokmanager.data.model.Pokemon
 import org.ivan.pokmanager.presentation.ui.components.PokemonDropdown
 import org.ivan.pokmanager.presentation.ui.theme.PokeColors
 import org.ivan.pokmanager.presentation.viewmodel.AddPokemonScreenViewModel
@@ -82,7 +78,7 @@ fun AddPokemonScreen(
             TopAppBar(
                 title = { Text("Registrar Pokémon") },
                 navigationIcon = {
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = { navController.navigateUp() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
                 },
@@ -262,6 +258,7 @@ fun AddPokemonScreen(
                         // Aquí podrías mostrar un Toast o Snackbar pidiendo el tipo
                     } else {
                         viewModel.savePokemon()
+                        navController.navigateUp()
 
                     }
                 },
