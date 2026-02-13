@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.navigation.compose.rememberNavController
-import org.ivan.pokmanager.presentation.ui.navigation.NavGraph
+import org.ivan.pokmanager.presentation.navigation.NavGraph
 import org.ivan.pokmanager.presentation.ui.theme.PokéManagerTheme
 
 class MainActivity : ComponentActivity() {

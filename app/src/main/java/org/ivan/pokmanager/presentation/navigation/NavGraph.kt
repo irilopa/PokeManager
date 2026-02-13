@@ -1,4 +1,4 @@
-package org.ivan.pokmanager.presentation.ui.navigation
+package org.ivan.pokmanager.presentation.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController

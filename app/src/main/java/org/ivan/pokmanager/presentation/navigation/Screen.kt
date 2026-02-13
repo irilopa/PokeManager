@@ -1,4 +1,4 @@
-package org.ivan.pokmanager.presentation.ui.navigation
+package org.ivan.pokmanager.presentation.navigation
 
 // Dentro de la sealed class definimos un object por cada ruta existenten
 sealed class Screen(val route: String) {

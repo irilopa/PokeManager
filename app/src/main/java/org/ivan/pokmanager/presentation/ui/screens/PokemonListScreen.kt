@@ -43,7 +43,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.ivan.pokmanager.data.model.Pokemon
 import org.ivan.pokmanager.presentation.ui.components.ActionMenu
-import org.ivan.pokmanager.presentation.ui.navigation.Screen
+import org.ivan.pokmanager.presentation.navigation.Screen
 import org.ivan.pokmanager.presentation.ui.theme.PokeColors
 import org.ivan.pokmanager.presentation.viewmodel.PokemonListViewModel
 
