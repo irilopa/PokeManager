@@ -61,12 +61,13 @@ import org.ivan.pokmanager.R
 import org.ivan.pokmanager.presentation.navigation.Screen
 import org.ivan.pokmanager.presentation.ui.theme.PokeColors
 import org.ivan.pokmanager.presentation.viewmodel.RegisterScreenViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
     navController: NavController,
-    viewModel: RegisterScreenViewModel = viewModel()
+    viewModel: RegisterScreenViewModel = koinViewModel()
 ) {
     val name by viewModel.name.collectAsState()
     val email by viewModel.email.collectAsState()

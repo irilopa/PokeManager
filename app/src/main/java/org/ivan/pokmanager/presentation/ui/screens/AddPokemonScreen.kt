@@ -47,18 +47,18 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.ivan.pokmanager.presentation.ui.components.PokemonDropdown
 import org.ivan.pokmanager.presentation.ui.theme.PokeColors
 import org.ivan.pokmanager.presentation.viewmodel.AddPokemonScreenViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddPokemonScreen(
     navController: NavController,
-    viewModel: AddPokemonScreenViewModel = viewModel()
+    viewModel: AddPokemonScreenViewModel = koinViewModel()
 ) {
     val name by viewModel.name.collectAsState()
     val primaryType by viewModel.primaryType.collectAsState()

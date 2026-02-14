@@ -46,12 +46,13 @@ import org.ivan.pokmanager.presentation.ui.components.ActionMenu
 import org.ivan.pokmanager.presentation.navigation.Screen
 import org.ivan.pokmanager.presentation.ui.theme.PokeColors
 import org.ivan.pokmanager.presentation.viewmodel.PokemonListViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PokemonListScreen(
     navController: NavController,
-    viewModel: PokemonListViewModel = viewModel()
+    viewModel: PokemonListViewModel = koinViewModel()
 ) {
 
     val pokemons by viewModel.pokemons.collectAsState()

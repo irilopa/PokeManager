@@ -54,11 +54,12 @@ import org.ivan.pokmanager.R
 import org.ivan.pokmanager.presentation.navigation.Screen
 import org.ivan.pokmanager.presentation.ui.theme.PokeColors
 import org.ivan.pokmanager.presentation.viewmodel.LoginScreenViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun LoginScreen(
     navController: NavController,
-    viewModel: LoginScreenViewModel = viewModel()
+    viewModel: LoginScreenViewModel = koinViewModel()
 ) {
     val username by viewModel.username.collectAsState()
     val password by viewModel.password.collectAsState()
