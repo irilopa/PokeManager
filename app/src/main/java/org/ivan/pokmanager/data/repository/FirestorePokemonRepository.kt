@@ -32,6 +32,66 @@ class FirestorePokemonRepository : PokemonRepository {
         const val FIELD_STATS = "stats"
     }
 
+    /**
+     * Convert Firestore document to Pokemon object
+     */
+    private fun documentToPokemon(doc: com.google.firebase.firestore.DocumentSnapshot): Pokemon? {
+        return try {
+            val statsMap = doc.get(FIELD_STATS) as? Map<*, *>
+            val stats = if (statsMap != null) {
+                PokemonStats(
+                    hp = (statsMap["hp"] as? Long)?.toInt() ?: 0,
+                    attack = (statsMap["attack"] as? Long)?.toInt() ?: 0,
+                    defense = (statsMap["defense"] as? Long)?.toInt() ?: 0,
+                    specialAttack = (statsMap["specialAttack"] as? Long)?.toInt() ?: 0,
+                    specialDefense = (statsMap["specialDefense"] as? Long)?.toInt() ?: 0,
+                    speed = (statsMap["speed"] as? Long)?.toInt() ?: 0
+                )
+            } else {
+                PokemonStats(0, 0, 0, 0, 0, 0)
+            }
+
+            Pokemon(
+                pokedexNumber = (doc.get(FIELD_POKEDEX_NUMBER) as? Long)?.toInt() ?: 0,
+                name = doc.getString(FIELD_NAME) ?: "",
+                types = doc.getString(FIELD_TYPES) ?: "",
+                description = doc.getString(FIELD_DESCRIPTION) ?: "",
+                heightM = doc.getDouble(FIELD_HEIGHT_M) ?: 0.0,
+                weightKg = doc.getDouble(FIELD_WEIGHT_KG) ?: 0.0,
+                stats = stats,
+                imageUrl = doc.getString(FIELD_IMAGE_URL) ?: "",
+                moves = (doc.get(FIELD_MOVES) as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
+            )
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    /**
+     * Convert Pokemon object to Firestore map
+     */
+    private fun pokemonToFirestoreMap(pokemon: Pokemon, userId: String): HashMap<String, Any> {
+        return hashMapOf(
+            FIELD_USER_ID to userId,
+            FIELD_POKEDEX_NUMBER to pokemon.pokedexNumber,
+            FIELD_NAME to pokemon.name,
+            FIELD_TYPES to pokemon.types,
+            FIELD_DESCRIPTION to pokemon.description,
+            FIELD_HEIGHT_M to pokemon.heightM,
+            FIELD_WEIGHT_KG to pokemon.weightKg,
+            FIELD_IMAGE_URL to pokemon.imageUrl,
+            FIELD_MOVES to pokemon.moves,
+            FIELD_STATS to hashMapOf(
+                "hp" to pokemon.stats.hp,
+                "attack" to pokemon.stats.attack,
+                "defense" to pokemon.stats.defense,
+                "specialAttack" to pokemon.stats.specialAttack,
+                "specialDefense" to pokemon.stats.specialDefense,
+                "speed" to pokemon.stats.speed
+            )
+        )
+    }
+
     override fun getPokemons(): Flow<Result<List<Pokemon>>> = callbackFlow {
         val userId = auth.currentUser?.uid
         
@@ -54,35 +114,7 @@ class FirestorePokemonRepository : PokemonRepository {
                 if (snapshot != null) {
                     try {
                         val pokemons = snapshot.documents.mapNotNull { doc ->
-                            try {
-                                val statsMap = doc.get(FIELD_STATS) as? Map<*, *>
-                                val stats = if (statsMap != null) {
-                                    PokemonStats(
-                                        hp = (statsMap["hp"] as? Long)?.toInt() ?: 0,
-                                        attack = (statsMap["attack"] as? Long)?.toInt() ?: 0,
-                                        defense = (statsMap["defense"] as? Long)?.toInt() ?: 0,
-                                        specialAttack = (statsMap["specialAttack"] as? Long)?.toInt() ?: 0,
-                                        specialDefense = (statsMap["specialDefense"] as? Long)?.toInt() ?: 0,
-                                        speed = (statsMap["speed"] as? Long)?.toInt() ?: 0
-                                    )
-                                } else {
-                                    PokemonStats(0, 0, 0, 0, 0, 0)
-                                }
-
-                                Pokemon(
-                                    pokedexNumber = (doc.get(FIELD_POKEDEX_NUMBER) as? Long)?.toInt() ?: 0,
-                                    name = doc.getString(FIELD_NAME) ?: "",
-                                    types = doc.getString(FIELD_TYPES) ?: "",
-                                    description = doc.getString(FIELD_DESCRIPTION) ?: "",
-                                    heightM = doc.getDouble(FIELD_HEIGHT_M) ?: 0.0,
-                                    weightKg = doc.getDouble(FIELD_WEIGHT_KG) ?: 0.0,
-                                    stats = stats,
-                                    imageUrl = doc.getString(FIELD_IMAGE_URL) ?: "",
-                                    moves = (doc.get(FIELD_MOVES) as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
-                                )
-                            } catch (e: Exception) {
-                                null
-                            }
+                            documentToPokemon(doc)
                         }
                         trySend(Result.Success(pokemons))
                     } catch (e: Exception) {
@@ -99,25 +131,7 @@ class FirestorePokemonRepository : PokemonRepository {
             val userId = auth.currentUser?.uid
                 ?: return Result.Error(Exception("Usuario no autenticado"))
 
-            val pokemonData = hashMapOf(
-                FIELD_USER_ID to userId,
-                FIELD_POKEDEX_NUMBER to pokemon.pokedexNumber,
-                FIELD_NAME to pokemon.name,
-                FIELD_TYPES to pokemon.types,
-                FIELD_DESCRIPTION to pokemon.description,
-                FIELD_HEIGHT_M to pokemon.heightM,
-                FIELD_WEIGHT_KG to pokemon.weightKg,
-                FIELD_IMAGE_URL to pokemon.imageUrl,
-                FIELD_MOVES to pokemon.moves,
-                FIELD_STATS to hashMapOf(
-                    "hp" to pokemon.stats.hp,
-                    "attack" to pokemon.stats.attack,
-                    "defense" to pokemon.stats.defense,
-                    "specialAttack" to pokemon.stats.specialAttack,
-                    "specialDefense" to pokemon.stats.specialDefense,
-                    "speed" to pokemon.stats.speed
-                )
-            )
+            val pokemonData = pokemonToFirestoreMap(pokemon, userId)
 
             firestore.collection(COLLECTION_POKEMONS)
                 .document("${userId}_${pokemon.pokedexNumber}")
@@ -135,25 +149,7 @@ class FirestorePokemonRepository : PokemonRepository {
             val userId = auth.currentUser?.uid
                 ?: return Result.Error(Exception("Usuario no autenticado"))
 
-            val pokemonData = hashMapOf(
-                FIELD_USER_ID to userId,
-                FIELD_POKEDEX_NUMBER to pokemon.pokedexNumber,
-                FIELD_NAME to pokemon.name,
-                FIELD_TYPES to pokemon.types,
-                FIELD_DESCRIPTION to pokemon.description,
-                FIELD_HEIGHT_M to pokemon.heightM,
-                FIELD_WEIGHT_KG to pokemon.weightKg,
-                FIELD_IMAGE_URL to pokemon.imageUrl,
-                FIELD_MOVES to pokemon.moves,
-                FIELD_STATS to hashMapOf(
-                    "hp" to pokemon.stats.hp,
-                    "attack" to pokemon.stats.attack,
-                    "defense" to pokemon.stats.defense,
-                    "specialAttack" to pokemon.stats.specialAttack,
-                    "specialDefense" to pokemon.stats.specialDefense,
-                    "speed" to pokemon.stats.speed
-                )
-            )
+            val pokemonData = pokemonToFirestoreMap(pokemon, userId)
 
             firestore.collection(COLLECTION_POKEMONS)
                 .document("${userId}_${pokemon.pokedexNumber}")
@@ -193,32 +189,12 @@ class FirestorePokemonRepository : PokemonRepository {
                 .await()
 
             if (doc.exists()) {
-                val statsMap = doc.get(FIELD_STATS) as? Map<*, *>
-                val stats = if (statsMap != null) {
-                    PokemonStats(
-                        hp = (statsMap["hp"] as? Long)?.toInt() ?: 0,
-                        attack = (statsMap["attack"] as? Long)?.toInt() ?: 0,
-                        defense = (statsMap["defense"] as? Long)?.toInt() ?: 0,
-                        specialAttack = (statsMap["specialAttack"] as? Long)?.toInt() ?: 0,
-                        specialDefense = (statsMap["specialDefense"] as? Long)?.toInt() ?: 0,
-                        speed = (statsMap["speed"] as? Long)?.toInt() ?: 0
-                    )
+                val pokemon = documentToPokemon(doc)
+                if (pokemon != null) {
+                    Result.Success(pokemon)
                 } else {
-                    PokemonStats(0, 0, 0, 0, 0, 0)
+                    Result.Error(Exception("Error al convertir el documento"))
                 }
-
-                val pokemon = Pokemon(
-                    pokedexNumber = (doc.get(FIELD_POKEDEX_NUMBER) as? Long)?.toInt() ?: 0,
-                    name = doc.getString(FIELD_NAME) ?: "",
-                    types = doc.getString(FIELD_TYPES) ?: "",
-                    description = doc.getString(FIELD_DESCRIPTION) ?: "",
-                    heightM = doc.getDouble(FIELD_HEIGHT_M) ?: 0.0,
-                    weightKg = doc.getDouble(FIELD_WEIGHT_KG) ?: 0.0,
-                    stats = stats,
-                    imageUrl = doc.getString(FIELD_IMAGE_URL) ?: "",
-                    moves = (doc.get(FIELD_MOVES) as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
-                )
-                Result.Success(pokemon)
             } else {
                 Result.Error(Exception("Pokémon no encontrado"))
             }
