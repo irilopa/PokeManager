@@ -106,11 +106,18 @@ Ejemplo de entidad Pokémon (para Room o Firestore):
 4. Ejecutar en emulador o dispositivo físico.
 5. (Opcional) Cargar datos de ejemplo desde un JSON inicial.
 
-### 🔧 Configuración Firebase (opcional)
+### 🔧 Configuración Firebase
 
-* Activar **Authentication (Email/Password)**.
-* Configurar **Firestore / Realtime Database** con reglas seguras (solo acceso por usuario autenticado).
-* Configurar **Firebase Storage** si se gestionan imágenes.
+**Firebase ya está configurado en este proyecto.** Para más detalles sobre la implementación, consulta:
+
+* 📖 **[FIRESTORE_IMPLEMENTATION.md](FIRESTORE_IMPLEMENTATION.md)** - Guía completa en español sobre la implementación de Firestore y casos de uso
+* 📖 **[USE_CASES_GUIDE.md](USE_CASES_GUIDE.md)** - Guía de arquitectura de casos de uso (en inglés)
+
+**Configuración requerida**:
+* ✅ Firebase Authentication (Email/Password) - **Ya configurado**
+* ✅ Cloud Firestore - **Ya configurado** 
+* ✅ Reglas de seguridad en Firestore (ver documentación)
+* 🔄 Firebase Storage (opcional para gestión de imágenes)
 
 ---
 
