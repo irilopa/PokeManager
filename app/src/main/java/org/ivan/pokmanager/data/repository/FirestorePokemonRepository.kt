@@ -1,6 +1,7 @@
 package org.ivan.pokmanager.data.repository
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -35,7 +36,7 @@ class FirestorePokemonRepository : PokemonRepository {
     /**
      * Convert Firestore document to Pokemon object
      */
-    private fun documentToPokemon(doc: com.google.firebase.firestore.DocumentSnapshot): Pokemon? {
+    private fun documentToPokemon(doc: DocumentSnapshot): Pokemon? {
         return try {
             val statsMap = doc.get(FIELD_STATS) as? Map<*, *>
             val stats = if (statsMap != null) {

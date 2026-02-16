@@ -1,5 +1,6 @@
 package org.ivan.pokmanager.domain.usecase
 
+import com.google.firebase.auth.FirebaseUser
 import org.ivan.pokmanager.domain.repository.AuthRepository
 import org.ivan.pokmanager.domain.util.Result
 
@@ -18,7 +19,7 @@ class RegisterUseCase(private val authRepository: AuthRepository) {
         email: String,
         password: String,
         confirmPassword: String
-    ): Result<com.google.firebase.auth.FirebaseUser> {
+    ): Result<FirebaseUser> {
         if (email.isBlank()) {
             return Result.Error(Exception("El email no puede estar vacío"))
         }
