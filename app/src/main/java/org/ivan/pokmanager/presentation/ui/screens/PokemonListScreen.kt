@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -35,15 +36,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import org.ivan.pokmanager.data.model.Pokemon
-import org.ivan.pokmanager.presentation.ui.components.ActionMenu
+import coil.compose.AsyncImage
+import org.ivan.pokmanager.domain.model.Pokemon
 import org.ivan.pokmanager.presentation.navigation.Screen
+import org.ivan.pokmanager.presentation.ui.components.ActionMenu
 import org.ivan.pokmanager.presentation.ui.theme.PokeColors
 import org.ivan.pokmanager.presentation.viewmodel.PokemonListViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -97,7 +99,7 @@ fun PokemonListScreen(
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(pokemons, key = { it.pokedexNumber }) { pokemon ->
+                items(pokemons, key = { it.id.ifBlank { it.pokedexNumber.toString() } }) { pokemon ->
                     PokemonCard(pokemon, viewModel, primaryColor) {
                         // cuando se pulsa la tarjeta navegamos a detalle
                         navController.navigate(Screen.PokemonDetail.createScreen(pokemon.pokedexNumber))
@@ -131,6 +133,17 @@ fun PokemonCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            if (pokemon.imageUrl.isNotBlank()) {
+                AsyncImage(
+                    model = pokemon.imageUrl,
+                    contentDescription = "Imagen de ${pokemon.name}",
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                )
+                Spacer(modifier = Modifier.size(12.dp))
+            }
+
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -190,8 +203,8 @@ fun PokemonCard(
 @Preview(showBackground = true)
 @Composable
 fun PokemonListScreenPreview() {
+    // Preview sin ViewModel real (Koin/Firestore). Solo mostramos la pantalla con navegación.
     PokemonListScreen(
-        navController = rememberNavController(),
-        viewModel = PokemonListViewModel()
+        navController = rememberNavController()
     )
 }

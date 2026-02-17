@@ -4,7 +4,7 @@ import com.google.firebase.firestore.DocumentId
 
 data class Pokemon(
     @DocumentId val id: String = "",
-    val pokedexNumber: Int,
+    val pokedexNumber: Int = 0,
     val name: String = "",
     val types: String = "",
     val description: String = "",

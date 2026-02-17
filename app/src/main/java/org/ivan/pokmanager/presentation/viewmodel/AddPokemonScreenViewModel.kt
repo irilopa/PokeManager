@@ -1,35 +1,29 @@
 package org.ivan.pokmanager.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import org.ivan.pokmanager.data.model.Pokemon
-import org.ivan.pokmanager.data.model.PokemonStats
-import org.ivan.pokmanager.data.model.repository.PokemonRepository
+import kotlinx.coroutines.launch
+import org.ivan.pokmanager.domain.model.Pokemon
+import org.ivan.pokmanager.domain.model.PokemonStats
+import org.ivan.pokmanager.domain.usecase.SavePokemonUseCase
 
-class AddPokemonScreenViewModel : ViewModel() {
-
-
-    val pokemonTypes = listOf(
-        "Planta", "Fuego", "Agua", "Eléctrico", "Hielo", "Lucha", "Veneno", "Tierra",
-        "Roca", "Volador", "Psíquico", "Bicho", "Dragón", "Siniestro", "Fantasma",
-        "Acero", "Hada", "Normal"
-    )
+class AddPokemonScreenViewModel(
+    private val savePokemonUseCase: SavePokemonUseCase
+) : ViewModel() {
 
     private val _name = MutableStateFlow("")
-
-    // Tipos separados para cada menú desplegable
+    private val _pokedexNumber = MutableStateFlow("")
     private val _primaryType = MutableStateFlow("")
     private val _secondaryType = MutableStateFlow("")
-
     private val _level = MutableStateFlow("")
     private val _hp = MutableStateFlow("")
     private val _attack = MutableStateFlow("")
-
     private val _notes = MutableStateFlow("")
 
-
     val name = _name.asStateFlow()
+    val pokedexNumber = _pokedexNumber.asStateFlow()
     val primaryType = _primaryType.asStateFlow()
     val secondaryType = _secondaryType.asStateFlow()
     val level = _level.asStateFlow()
@@ -37,77 +31,93 @@ class AddPokemonScreenViewModel : ViewModel() {
     val attack = _attack.asStateFlow()
     val notes = _notes.asStateFlow()
 
+    // Lista de tipos que la UI utiliza. Mínima y estática; cambiar por fuente real si existe.
+    val pokemonTypes: List<String> = listOf(
+        "Normal", "Fuego", "Agua", "Planta", "Eléctrico", "Hielo", "Lucha",
+        "Veneno", "Tierra", "Volador", "Psíquico", "Bicho", "Roca", "Fantasma",
+        "Dragón", "Siniestro", "Acero", "Hada"
+    )
 
-    fun setName(newName: String) {
-        _name.value = newName
+    fun setName(value: String) {
+        _name.value = value
     }
 
-    fun setPrimaryTypeSelected(type: String) {
-        _primaryType.value = type
+    fun setPokedexNumber(value: String) {
+        if (value.all { it.isDigit() }) _pokedexNumber.value = value
     }
 
-    fun setSecondaryTypeSelected(type: String) {
-        _secondaryType.value = type
+    fun setPrimaryType(value: String) {
+        _primaryType.value = value
     }
 
-
-    fun setLevel(newLevel: String) {
-        if (newLevel.all { it.isDigit() }) {
-            _level.value = newLevel
-        }
+    fun setSecondaryType(value: String) {
+        _secondaryType.value = value
     }
 
-    fun setHp(newHp: String) {
-        if (newHp.all { it.isDigit() }) {
-            _hp.value = newHp
-        }
+    // Métodos que la UI estaba invocando (nombres distintos). Delegan a los setters existentes.
+    fun setPrimaryTypeSelected(value: String) {
+        setPrimaryType(value)
     }
 
-    fun setAttack(newAttack: String) {
-        if (newAttack.all { it.isDigit() }) {
-            _attack.value = newAttack
-        }
+    fun setSecondaryTypeSelected(value: String) {
+        setSecondaryType(value)
     }
 
-    fun setNotes(newNote: String) {
-        _notes.value = newNote
+    fun setLevel(value: String) {
+        if (value.all { it.isDigit() }) _level.value = value
     }
 
+    fun setHp(value: String) {
+        if (value.all { it.isDigit() }) _hp.value = value
+    }
+
+    fun setAttack(value: String) {
+        if (value.all { it.isDigit() }) _attack.value = value
+    }
+
+    fun setNotes(value: String) {
+        _notes.value = value
+    }
 
     fun savePokemon() {
-        val finalName = _name.value
-        // Convertimos Strings a Int de forma segura
-        val finalLevel = _level.value.toIntOrNull() ?: 1
-        val finalHp = _hp.value.toIntOrNull() ?: 10
-        val finalAttack = _attack.value.toIntOrNull() ?: 5
+        val pokedexNumberInt = _pokedexNumber.value.toIntOrNull()
+        val resolvedPokedexNumber = pokedexNumberInt ?: (System.currentTimeMillis() / 1000).toInt()
 
-        // Construimos el String de tipos "Fuego / Volador"
-        val typeString = if (_secondaryType.value.isNotBlank()) {
+        val pokemon = Pokemon(
+            pokedexNumber = resolvedPokedexNumber,
+            name = _name.value,
+            types = buildTypes(),
+            description = _notes.value,
+            heightM = 0.0,
+            weightKg = 0.0,
+            stats = PokemonStats(
+                hp = _hp.value.toIntOrNull() ?: 10,
+                attack = _attack.value.toIntOrNull() ?: 5,
+                defense = 0,
+                specialAttack = 0,
+                specialDefense = 0,
+                speed = 0
+            ),
+            imageUrl = buildOfficialArtworkUrl(pokedexNumberInt),
+            moves = emptyList()
+        )
+
+        viewModelScope.launch {
+            savePokemonUseCase(pokemon)
+        }
+    }
+
+    private fun buildOfficialArtworkUrl(pokedexNumber: Int?): String {
+        // Si no hay número válido, no forzamos URL.
+        if (pokedexNumber == null || pokedexNumber <= 0) return ""
+        return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/$pokedexNumber.png"
+    }
+
+    private fun buildTypes(): String {
+        return if (_secondaryType.value.isNotBlank()) {
             "${_primaryType.value} / ${_secondaryType.value}"
         } else {
             _primaryType.value
         }
-        // 2. Creamos el objeto COMPLETO
-        val newPokemon = Pokemon(
-            pokedexNumber = (System.currentTimeMillis() / 1000).toInt(), // ID "único" basado en tiempo
-            name = finalName,
-            types = typeString,
-            description = "Pokémon registrado manualmente por el entrenador.", // Default
-            heightM = 0.0, // Default
-            weightKg = 0.0, // Default
-            stats = PokemonStats(
-                hp = finalHp,
-                attack = finalAttack,
-                defense = 0, // Default
-                specialAttack = 0, // Default
-                specialDefense = 0, // Default
-                speed = 0 // Default
-            ),
-            imageUrl = "",
-            moves = emptyList()
-        )
-
-        // 3. ¡Guardamos en la "BBDD"!
-        PokemonRepository.addPokemon(newPokemon)
     }
 }

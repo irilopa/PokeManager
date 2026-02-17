@@ -58,18 +58,21 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun AddPokemonScreen(
     navController: NavController,
-    viewModel: AddPokemonScreenViewModel = koinViewModel()
+    viewModel: AddPokemonScreenViewModel? = null
 ) {
-    val name by viewModel.name.collectAsState()
-    val primaryType by viewModel.primaryType.collectAsState()
-    val secondaryType by viewModel.secondaryType.collectAsState()
-    val level by viewModel.level.collectAsState()
-    val hp by viewModel.hp.collectAsState()
-    val attack by viewModel.attack.collectAsState()
-    val notes by viewModel.notes.collectAsState()
+    val vm: AddPokemonScreenViewModel = viewModel ?: koinViewModel()
+
+    val name by vm.name.collectAsState()
+    val pokedexNumber by vm.pokedexNumber.collectAsState()
+    val primaryType by vm.primaryType.collectAsState()
+    val secondaryType by vm.secondaryType.collectAsState()
+    val level by vm.level.collectAsState()
+    val hp by vm.hp.collectAsState()
+    val attack by vm.attack.collectAsState()
+    val notes by vm.notes.collectAsState()
 
     var isNameError by remember { mutableStateOf(false) }
-    val pokemonTypes = viewModel.pokemonTypes
+    val pokemonTypes = vm.pokemonTypes
 
     val primaryColor = PokeColors.PokeRed
 
@@ -117,11 +120,11 @@ fun AddPokemonScreen(
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-            // 1️⃣ Nombre (Obligatorio)
+            //nombre del pokemon
             OutlinedTextField(
                 value = name,
                 onValueChange = {
-                    viewModel.setName(it)
+                    vm.setName(it)
                     isNameError = false
                 },
                 label = { Text("Nombre del Pokémon") },
@@ -156,26 +159,47 @@ fun AddPokemonScreen(
                 )
             )
 
-            // 2️⃣ Tipo Principal (Obligatorio)
+            // Número de Pokédex (para generar imagen automáticamente)
+            OutlinedTextField(
+                value = pokedexNumber,
+                onValueChange = { newValue ->
+                    // Solo permite números y longitud razonable
+                    if (newValue.all { it.isDigit() } && newValue.length <= 5) {
+                        vm.setPokedexNumber(newValue)
+                    }
+                },
+                label = { Text("Nº Pokédex") },
+                placeholder = { Text("Ej. 25") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = primaryColor,
+                    unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f)
+                )
+            )
+
+            // Tipo primario (Obligatorio)
             PokemonDropdown(
                 label = "Tipo Principal",
                 options = pokemonTypes,
                 selectedOption = primaryType,
-                onOptionSelected = { viewModel.setPrimaryTypeSelected(it) }
+                onOptionSelected = { vm.setPrimaryTypeSelected(it) }
             )
 
-            // 3️⃣ Tipo Secundario (Opcional)
+            // Tipo secundario (opcional)
             PokemonDropdown(
                 label = "Tipo Secundario (Opcional)",
                 options = listOf("Ninguno") + pokemonTypes,
                 selectedOption = secondaryType.ifBlank { "" },
                 onOptionSelected = {
                     val selected = if (it == "Ninguno") "" else it
-                    viewModel.setSecondaryTypeSelected(selected)
+                    vm.setSecondaryTypeSelected(selected)
                 }
             )
 
-            // 4️⃣ Nivel (Numérico 1-100)
+            // Nivel (0-100)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -185,7 +209,7 @@ fun AddPokemonScreen(
                     onValueChange = { newValue ->
                         // Solo permite números y longitud máx 3
                         if (newValue.all { it.isDigit() } && newValue.length <= 3) {
-                            viewModel.setLevel(newValue)
+                            vm.setLevel(newValue)
                         }
                     },
                     label = { Text("Nivel") },
@@ -198,10 +222,10 @@ fun AddPokemonScreen(
                     )
                 )
 
-                // 5️⃣ PS (Puntos de Salud)
+                // Estadisticas del pokemon
                 OutlinedTextField(
                     value = hp,
-                    onValueChange = { if (it.all { char -> char.isDigit() }) viewModel.setHp(it) },
+                    onValueChange = { if (it.all { char -> char.isDigit() }) vm.setHp(it) },
                     label = { Text("PS") },
                     placeholder = { Text("10") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -214,10 +238,10 @@ fun AddPokemonScreen(
                 )
             }
 
-            // 6️⃣ Ataque
+            // Ataque
             OutlinedTextField(
                 value = attack,
-                onValueChange = { if (it.all { char -> char.isDigit() }) viewModel.setAttack(it) },
+                onValueChange = { if (it.all { char -> char.isDigit() }) vm.setAttack(it) },
                 label = { Text("Ataque") },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Number,
@@ -231,10 +255,10 @@ fun AddPokemonScreen(
                 )
             )
 
-            // 7️⃣ Notas (Opcional, Multilinea)
+            // Notas
             OutlinedTextField(
                 value = notes,
-                onValueChange = { viewModel.setNotes(it) },
+                onValueChange = { vm.setNotes(it) },
                 label = { Text("Notas adicionales") },
                 placeholder = { Text("¿Dónde lo capturaste? ¿Es shiny?") },
                 minLines = 3,
@@ -257,7 +281,7 @@ fun AddPokemonScreen(
                     } else if (primaryType.isBlank()) {
                         // Aquí podrías mostrar un Toast o Snackbar pidiendo el tipo
                     } else {
-                        viewModel.savePokemon()
+                        vm.savePokemon()
                         navController.navigateUp()
 
                     }
@@ -280,7 +304,6 @@ fun AddPokemonScreen(
 @Composable
 fun AddPokemonScreenPreview() {
     AddPokemonScreen(
-        navController = rememberNavController(),
-        viewModel = AddPokemonScreenViewModel()
+        navController = rememberNavController()
     )
 }

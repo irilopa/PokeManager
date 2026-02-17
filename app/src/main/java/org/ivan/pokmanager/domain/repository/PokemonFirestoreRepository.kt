@@ -18,40 +18,38 @@ class PokemonFirestoreRepository(val firestore: FirebaseFirestore) {
             e.printStackTrace()
             null
         }
-        fun list(): Flow<List<Pokemon>> {
-            // Esta implementación crea un Flow que actualiza la lista de usuarios
-            // cada vez que hay un cambio en la base de datos
-            return queryForList(
-                pokemonCollection,
-                Pokemon::class.java
-            )
-        }
-
-        // Agregar un nuevo usuario
-        suspend fun save(pokemon: Pokemon): Boolean {
-            return try {
-                pokemonCollection.add(pokemon).await()
-                true
-            } catch (e: Exception) {
-                e.printStackTrace()
-                false
-            }
-        }
-
-        // Eliminar un usuario por ID
-        suspend fun delete(id: String): Boolean {
-            return try {
-                pokemonCollection.document(id).delete().await()
-                true
-            } catch (e: Exception) {
-                e.printStackTrace()
-                false
-            }
-        }
-
     }
 
-    // Este método es siempre igual para cualquier repository
+    fun list(): Flow<List<Pokemon>> {
+        return queryForList(
+            pokemonCollection,
+            Pokemon::class.java
+        )
+    }
+
+
+    suspend fun save(pokemon: Pokemon): Boolean {
+        return try {
+            pokemonCollection.add(pokemon).await()
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+
+    suspend fun delete(id: String): Boolean {
+        return try {
+            pokemonCollection.document(id).delete().await()
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+
     private fun <T> queryForList(query: Query, clazz: Class<T>): Flow<List<T>> {
         return callbackFlow {
 
@@ -74,7 +72,7 @@ class PokemonFirestoreRepository(val firestore: FirebaseFirestore) {
         }
     }
 
-    // Este método es siempre igual para cualquier repository
+
     private fun <T> queryForSingle(query: Query, clazz: Class<T>): Flow<T?> {
         return callbackFlow {
             val listener = query
@@ -91,5 +89,7 @@ class PokemonFirestoreRepository(val firestore: FirebaseFirestore) {
             awaitClose() { listener.remove() }
         }
     }
+
+    companion object
 
 }
