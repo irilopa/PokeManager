@@ -1,9 +1,9 @@
 package org.ivan.pokmanager.presentation.ui.components
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -46,7 +46,7 @@ fun ActionMenu(
         title = { Text(title) },
         navigationIcon = {
             if (showBackButton) {
-                IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, contentDescription = "Atrás") }
+                IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás") }
             }
         },
         actions = {
@@ -70,7 +70,7 @@ fun ActionMenu(
 
                 DropdownMenuItem(
                     text = { Text("Cerrar sesión") },
-                    leadingIcon = { Icon(Icons.Filled.ExitToApp, contentDescription = null) },
+                    leadingIcon = { Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null) },
                     onClick = {
                         expanded = false
                         onLogout()

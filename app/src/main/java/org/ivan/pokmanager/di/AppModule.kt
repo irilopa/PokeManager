@@ -31,7 +31,7 @@ val appModule = module {
     factory { SavePokemonUseCase(get()) }
 
     // ViewModels
-    viewModel { AddPokemonScreenViewModel(get()) }
+    viewModel { AddPokemonScreenViewModel(get(), get(), get()) }
     viewModel { PokemonListViewModel(get(), get(),get()) }
 
     viewModel { LoginScreenViewModel(get()) }

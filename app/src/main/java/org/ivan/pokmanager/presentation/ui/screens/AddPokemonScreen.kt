@@ -3,6 +3,7 @@ package org.ivan.pokmanager.presentation.ui.screens
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,14 +14,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Pets
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -33,6 +38,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -70,11 +76,22 @@ fun AddPokemonScreen(
     val hp by vm.hp.collectAsState()
     val attack by vm.attack.collectAsState()
     val notes by vm.notes.collectAsState()
+    val isLoadingFromApi by vm.isLoadingFromApi.collectAsState()
+    val apiError by vm.apiError.collectAsState()
+    val apiSuccess by vm.apiSuccess.collectAsState()
 
     var isNameError by remember { mutableStateOf(false) }
     val pokemonTypes = vm.pokemonTypes
 
     val primaryColor = PokeColors.PokeRed
+
+    // Limpiar el mensaje de éxito tras 3 segundos
+    LaunchedEffect(apiSuccess) {
+        if (apiSuccess) {
+            kotlinx.coroutines.delay(3000)
+            vm.clearApiSuccess()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -104,7 +121,7 @@ fun AddPokemonScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            // --- 2. ENCABEZADO VISUAL ---
+            // Encabezado visual
             Icon(
                 imageVector = Icons.Default.Pets,
                 contentDescription = null,
@@ -120,56 +137,93 @@ fun AddPokemonScreen(
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-            //nombre del pokemon
-            OutlinedTextField(
-                value = name,
-                onValueChange = {
-                    vm.setName(it)
-                    isNameError = false
-                },
-                label = { Text("Nombre del Pokémon") },
-                placeholder = { Text("Ej. Pikachu") },
-                leadingIcon = {
-                    Icon(
-                        Icons.Default.Pets,
-                        contentDescription = null,
-                        tint = primaryColor
-                    )
-                },
-                isError = isNameError,
-                supportingText = {
-                    if (isNameError) Text(
-                        "El nombre es obligatorio",
-                        color = MaterialTheme.colorScheme.error
-                    )
-                },
-                trailingIcon = {
-                    if (isNameError) Icon(
-                        Icons.Default.Warning,
-                        "Error",
-                        tint = MaterialTheme.colorScheme.error
-                    )
-                },
-                singleLine = true,
+            // Campo nombre + botón buscar
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = primaryColor,
-                    unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.Top
+            ) {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = {
+                        vm.setName(it)
+                        isNameError = false
+                        vm.clearApiError()
+                    },
+                    label = { Text("Nombre del Pokémon") },
+                    placeholder = { Text("Ej. Pikachu") },
+                    leadingIcon = {
+                        Icon(Icons.Default.Pets, contentDescription = null, tint = primaryColor)
+                    },
+                    isError = isNameError || apiError != null,
+                    supportingText = {
+                        when {
+                            isNameError -> Text("El nombre es obligatorio", color = MaterialTheme.colorScheme.error)
+                            apiError != null -> Text(apiError!!, color = MaterialTheme.colorScheme.error)
+                            apiSuccess -> Text(
+                                "✓ Datos autocompletados desde la Pokédex",
+                                color = Color(0xFF388E3C)
+                            )
+                        }
+                    },
+                    trailingIcon = {
+                        when {
+                            isNameError || apiError != null ->
+                                Icon(Icons.Default.Warning, "Error", tint = MaterialTheme.colorScheme.error)
+                            apiSuccess ->
+                                Icon(Icons.Default.CheckCircle, "OK", tint = Color(0xFF388E3C))
+                        }
+                    },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                    keyboardActions = KeyboardActions(onSearch = { vm.fetchPokemonFromApi() }),
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = primaryColor,
+                        unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f)
+                    )
                 )
-            )
 
-            // Número de Pokédex (para generar imagen automáticamente)
+                // Botón buscar
+                Box(
+                    modifier = Modifier
+                        .padding(top = 4.dp)
+                        .size(56.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (isLoadingFromApi) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(32.dp),
+                            color = primaryColor,
+                            strokeWidth = 3.dp
+                        )
+                    } else {
+                        IconButton(
+                            onClick = { vm.fetchPokemonFromApi() },
+                            enabled = name.isNotBlank()
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = "Buscar en Pokédex",
+                                tint = if (name.isNotBlank()) primaryColor else Color.Gray,
+                                modifier = Modifier.size(28.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Nº Pokédex (solo lectura, se rellena automáticamente con la búsqueda)
             OutlinedTextField(
                 value = pokedexNumber,
                 onValueChange = { newValue ->
-                    // Solo permite números y longitud razonable
                     if (newValue.all { it.isDigit() } && newValue.length <= 5) {
                         vm.setPokedexNumber(newValue)
                     }
                 },
                 label = { Text("Nº Pokédex") },
-                placeholder = { Text("Ej. 25") },
+                placeholder = { Text("Se rellena al buscar") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
@@ -180,7 +234,7 @@ fun AddPokemonScreen(
                 )
             )
 
-            // Tipo primario (Obligatorio)
+            // Tipo primario
             PokemonDropdown(
                 label = "Tipo Principal",
                 options = pokemonTypes,
@@ -188,7 +242,7 @@ fun AddPokemonScreen(
                 onOptionSelected = { vm.setPrimaryTypeSelected(it) }
             )
 
-            // Tipo secundario (opcional)
+            // Tipo secundario
             PokemonDropdown(
                 label = "Tipo Secundario (Opcional)",
                 options = listOf("Ninguno") + pokemonTypes,
@@ -199,7 +253,7 @@ fun AddPokemonScreen(
                 }
             )
 
-            // Nivel (0-100)
+            // Nivel y PS
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -207,7 +261,6 @@ fun AddPokemonScreen(
                 OutlinedTextField(
                     value = level,
                     onValueChange = { newValue ->
-                        // Solo permite números y longitud máx 3
                         if (newValue.all { it.isDigit() } && newValue.length <= 3) {
                             vm.setLevel(newValue)
                         }
@@ -222,7 +275,6 @@ fun AddPokemonScreen(
                     )
                 )
 
-                // Estadisticas del pokemon
                 OutlinedTextField(
                     value = hp,
                     onValueChange = { if (it.all { char -> char.isDigit() }) vm.setHp(it) },
@@ -275,15 +327,11 @@ fun AddPokemonScreen(
 
             Button(
                 onClick = {
-
                     if (name.isBlank()) {
                         isNameError = true
-                    } else if (primaryType.isBlank()) {
-                        // Aquí podrías mostrar un Toast o Snackbar pidiendo el tipo
                     } else {
                         vm.savePokemon()
                         navController.navigateUp()
-
                     }
                 },
                 modifier = Modifier
@@ -303,7 +351,5 @@ fun AddPokemonScreen(
 @Preview(showBackground = true)
 @Composable
 fun AddPokemonScreenPreview() {
-    AddPokemonScreen(
-        navController = rememberNavController()
-    )
+    AddPokemonScreen(navController = rememberNavController())
 }
