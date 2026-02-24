@@ -1,7 +1,10 @@
 package org.ivan.pokmanager.di
 
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import org.ivan.pokmanager.domain.repository.AuthRepository
 import org.ivan.pokmanager.domain.repository.PokemonFirestoreRepository
+import org.ivan.pokmanager.domain.repository.UserRepository
 import org.ivan.pokmanager.domain.usecase.DeletePokemonUseCase
 import org.ivan.pokmanager.domain.usecase.GetPokemonUseCase
 import org.ivan.pokmanager.domain.usecase.SavePokemonUseCase
@@ -15,9 +18,12 @@ import org.koin.dsl.module
 val appModule = module {
     // Singleton del FirebaseFirestore
     single { FirebaseFirestore.getInstance() }
+    single { FirebaseAuth.getInstance() }
 
     // Repositorio Firestore
     single { PokemonFirestoreRepository(get()) }
+    single { AuthRepository(get()) }
+    single { UserRepository(get()) }
 
     // UseCases
     factory { GetPokemonUseCase(get()) }
@@ -26,9 +32,9 @@ val appModule = module {
 
     // ViewModels
     viewModel { AddPokemonScreenViewModel(get()) }
-    viewModel { PokemonListViewModel(get(), get()) }
+    viewModel { PokemonListViewModel(get(), get(),get()) }
 
-    viewModel { LoginScreenViewModel() }
+    viewModel { LoginScreenViewModel(get()) }
     viewModel { RegisterScreenViewModel() }
 
 }

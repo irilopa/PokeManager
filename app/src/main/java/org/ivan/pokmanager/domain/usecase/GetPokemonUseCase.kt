@@ -6,8 +6,8 @@ import org.ivan.pokmanager.domain.model.Pokemon
 import org.ivan.pokmanager.domain.repository.PokemonFirestoreRepository
 
 class GetPokemonUseCase(private val pokemonFirestoreRepository: PokemonFirestoreRepository) {
-    operator fun invoke(): Flow<List<Pokemon>> {
-        return pokemonFirestoreRepository.list()
+    operator fun invoke(uid: String): Flow<List<Pokemon>> {
+        return pokemonFirestoreRepository.list(uid)
     }
 }
 

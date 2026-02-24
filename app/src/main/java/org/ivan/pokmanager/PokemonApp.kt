@@ -2,6 +2,7 @@ package org.ivan.pokmanager
 
 import android.app.Application
 import org.ivan.pokmanager.di.appModule
+import org.ivan.pokmanager.di.retrofitModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.GlobalContext.startKoin
 
@@ -10,7 +11,10 @@ class PokemonApp : Application() {
         super.onCreate()
         startKoin {
             androidContext(this@PokemonApp)
-            modules(appModule)
+            modules(
+                appModule,
+                retrofitModule
+            )
         }
     }
 }

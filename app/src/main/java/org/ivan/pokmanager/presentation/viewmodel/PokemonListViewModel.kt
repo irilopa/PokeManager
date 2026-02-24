@@ -2,6 +2,7 @@ package org.ivan.pokmanager.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -15,21 +16,28 @@ import org.ivan.pokmanager.domain.usecase.GetPokemonUseCase
 
 class PokemonListViewModel(
     private val getPokemonUseCase: GetPokemonUseCase,
-    private val deletePokemonUseCase: DeletePokemonUseCase
+    private val deletePokemonUseCase: DeletePokemonUseCase,
+    private val firebaseAuth: FirebaseAuth
 ) : ViewModel() {
 
-    private val _pokemons = getPokemonUseCase().stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        emptyList()
-    )
-    val pokemons: StateFlow<List<Pokemon>> = _pokemons
+    private val uid = firebaseAuth.currentUser?.uid
+
+    val pokemons: StateFlow<List<Pokemon>> =
+        if (uid != null) {
+            getPokemonUseCase(uid).stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5000),
+                emptyList()
+            )
+        } else {
+            MutableStateFlow(emptyList())
+        }
 
     fun removePokemon(pokemon: Pokemon) {
-        // En Firestore borramos por id del documento.
-        if (pokemon.id.isBlank()) return
+        if (pokemon.id.isBlank() || uid == null) return
+
         viewModelScope.launch {
-            deletePokemonUseCase(pokemon.id)
+            deletePokemonUseCase(uid, pokemon.id)
         }
     }
 }

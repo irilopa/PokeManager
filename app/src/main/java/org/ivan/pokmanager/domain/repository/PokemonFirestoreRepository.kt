@@ -8,88 +8,77 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import org.ivan.pokmanager.domain.model.Pokemon
 
-class PokemonFirestoreRepository(val firestore: FirebaseFirestore) {
-    private val pokemonCollection = firestore.collection("pokemon")
-    suspend fun getById(id: String): Pokemon? {
+class PokemonFirestoreRepository(
+    private val firestore: FirebaseFirestore
+) {
+
+    private fun userPokemonCollection(uid: String) =
+        firestore.collection("users")
+            .document(uid)
+            .collection("pokemon")
+
+    suspend fun getById(uid: String, id: String): Pokemon? {
         return try {
-            val documentSnapshot = pokemonCollection.document(id).get().await()
-            documentSnapshot.toObject(Pokemon::class.java)
+            val snapshot = userPokemonCollection(uid)
+                .document(id)
+                .get()
+                .await()
+
+            snapshot.toObject(Pokemon::class.java)
+
         } catch (e: Exception) {
-            e.printStackTrace()
             null
         }
     }
 
-    fun list(): Flow<List<Pokemon>> {
+    fun list(uid: String): Flow<List<Pokemon>> {
         return queryForList(
-            pokemonCollection,
+            userPokemonCollection(uid),
             Pokemon::class.java
         )
     }
 
-
-    suspend fun save(pokemon: Pokemon): Boolean {
+    suspend fun save(uid: String, pokemon: Pokemon): Boolean {
         return try {
-            pokemonCollection.add(pokemon).await()
+            userPokemonCollection(uid)
+                .add(pokemon)
+                .await()
             true
         } catch (e: Exception) {
-            e.printStackTrace()
             false
         }
     }
 
-
-    suspend fun delete(id: String): Boolean {
+    suspend fun delete(uid: String, id: String): Boolean {
         return try {
-            pokemonCollection.document(id).delete().await()
+            userPokemonCollection(uid)
+                .document(id)
+                .delete()
+                .await()
             true
         } catch (e: Exception) {
-            e.printStackTrace()
             false
         }
     }
-
 
     private fun <T> queryForList(query: Query, clazz: Class<T>): Flow<List<T>> {
         return callbackFlow {
 
-            val listener = query
-                .addSnapshotListener { snapshots, error ->
-                    if (error != null) {
-                        close(error)
-                        return@addSnapshotListener
-                    }
-
-                    val items = snapshots?.documents?.mapNotNull { doc ->
-                        doc.toObject(clazz)
-
-                    } ?: emptyList()
-
-                    trySend(items)
+            val listener = query.addSnapshotListener { snapshots, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
                 }
 
-            awaitClose() { listener.remove() }
+                val items = snapshots?.documents?.mapNotNull {
+                    it.toObject(clazz)
+                } ?: emptyList()
+
+                trySend(items)
+            }
+
+            awaitClose { listener.remove() }
         }
     }
-
-
-    private fun <T> queryForSingle(query: Query, clazz: Class<T>): Flow<T?> {
-        return callbackFlow {
-            val listener = query
-                .addSnapshotListener { snapshots, error ->
-                    if (error != null) {
-                        close(error)
-                        return@addSnapshotListener
-                    }
-
-                    val item = snapshots?.documents?.firstOrNull()?.toObject(clazz)
-
-                    trySend(item)
-                }
-            awaitClose() { listener.remove() }
-        }
-    }
-
-    companion object
-
 }
+
