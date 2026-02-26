@@ -23,18 +23,16 @@ import androidx.compose.ui.graphics.Color
 import org.ivan.pokmanager.presentation.ui.theme.PokeColors
 
 /**
- * TopAppBar con un menú overflow que contiene:
- *  - "Añadir Pokémon"  -> onAddPokemon()
- *  - "Cerrar sesión"    -> onLogout()
+ * TopAppBar con menu overflow para anadir Pokemon y cerrar sesion.
  *
- * No conoce NavController: pasa callbacks desde la pantalla.
+ * @param showBackButton muestra la flecha de regreso si se necesita.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ActionMenu(
     title: String,
     modifier: Modifier = Modifier,
-    showBackButton: Boolean = false,       // opcional si quieres flecha atrás en el futuro
+    showBackButton: Boolean = false,
     onBack: () -> Unit = {},
     onAddPokemon: () -> Unit,
     onLogout: () -> Unit,
@@ -50,7 +48,6 @@ fun ActionMenu(
             }
         },
         actions = {
-            // Botón de abrir menú
             IconButton(onClick = { expanded = !expanded }) {
                 Icon(imageVector = Icons.Filled.MoreVert, contentDescription = "Más opciones")
             }

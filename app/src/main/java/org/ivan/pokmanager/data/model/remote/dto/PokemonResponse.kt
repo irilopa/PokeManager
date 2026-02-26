@@ -2,17 +2,19 @@ package org.ivan.pokmanager.data.model.remote.dto
 
 import org.ivan.pokmanager.domain.model.PokemonStats
 
-
-// DTOs para los tipos que devuelve la PokeAPI
+/** Nombre del tipo devuelto por la PokeAPI. */
 data class TypeNameDTO(val name: String)
+/** Posicion del tipo en la lista de tipos. */
 data class TypeSlotDTO(val slot: Int = 1, val type: TypeNameDTO)
 
+/** Respuesta basica de Pokemon usada para autocompletar datos. */
 data class PokemonResponse(
     val id: Int,
     val name: String,
     val stats: List<StatResponseDTO>,
     val types: List<TypeSlotDTO> = emptyList()
 )
+/** Convierte la lista de stats en el modelo de dominio. */
 @Suppress("unused")
 fun PokemonResponse.toPokemonStats(): PokemonStats {
 
@@ -29,7 +31,7 @@ fun PokemonResponse.toPokemonStats(): PokemonStats {
     )
 }
 
-/** Mapeo de nombre de tipo en inglés → español */
+/** Mapa de nombre de tipo en ingles a espanol. */
 private val typeTranslations = mapOf(
     "normal" to "Normal", "fire" to "Fuego", "water" to "Agua",
     "grass" to "Planta", "electric" to "Eléctrico", "ice" to "Hielo",
@@ -39,5 +41,5 @@ private val typeTranslations = mapOf(
     "dark" to "Siniestro", "steel" to "Acero", "fairy" to "Hada"
 )
 
+/** Traduce el nombre del tipo al español cuando existe un mapeo. */
 fun TypeNameDTO.toSpanish(): String = typeTranslations[name] ?: name.replaceFirstChar { it.uppercase() }
-

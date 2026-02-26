@@ -8,6 +8,9 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import org.ivan.pokmanager.domain.model.Pokemon
 
+/**
+ * Repositorio Firestore para el equipo Pokemon de un usuario.
+ */
 class PokemonFirestoreRepository(
     private val firestore: FirebaseFirestore
 ) {
@@ -17,6 +20,7 @@ class PokemonFirestoreRepository(
             .document(uid)
             .collection("pokemon")
 
+    /** Obtiene un Pokemon por id en la coleccion del usuario. */
     suspend fun getById(uid: String, id: String): Pokemon? {
         return try {
             val snapshot = userPokemonCollection(uid)
@@ -31,6 +35,7 @@ class PokemonFirestoreRepository(
         }
     }
 
+    /** Observa la lista de Pokemon del usuario. */
     fun list(uid: String): Flow<List<Pokemon>> {
         return queryForList(
             userPokemonCollection(uid),
@@ -38,6 +43,7 @@ class PokemonFirestoreRepository(
         )
     }
 
+    /** Guarda un Pokemon en la coleccion del usuario. */
     suspend fun save(uid: String, pokemon: Pokemon): Boolean {
         return try {
             userPokemonCollection(uid)
@@ -49,6 +55,7 @@ class PokemonFirestoreRepository(
         }
     }
 
+    /** Elimina un Pokemon por id en la coleccion del usuario. */
     suspend fun delete(uid: String, id: String): Boolean {
         return try {
             userPokemonCollection(uid)
@@ -81,4 +88,3 @@ class PokemonFirestoreRepository(
         }
     }
 }
-

@@ -60,6 +60,9 @@ import org.ivan.pokmanager.presentation.ui.theme.PokeColors
 import org.ivan.pokmanager.presentation.viewmodel.AddPokemonScreenViewModel
 import org.koin.androidx.compose.koinViewModel
 
+/**
+ * Pantalla para registrar un Pokemon y autocompletar datos desde la PokeAPI.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddPokemonScreen(
@@ -85,7 +88,6 @@ fun AddPokemonScreen(
 
     val primaryColor = PokeColors.PokeRed
 
-    // Limpiar el mensaje de éxito tras 3 segundos
     LaunchedEffect(apiSuccess) {
         if (apiSuccess) {
             kotlinx.coroutines.delay(3000)
@@ -121,7 +123,6 @@ fun AddPokemonScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            // Encabezado visual
             Icon(
                 imageVector = Icons.Default.Pets,
                 contentDescription = null,
@@ -137,7 +138,6 @@ fun AddPokemonScreen(
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-            // Campo nombre + botón buscar
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -185,7 +185,6 @@ fun AddPokemonScreen(
                     )
                 )
 
-                // Botón buscar
                 Box(
                     modifier = Modifier
                         .padding(top = 4.dp)
@@ -214,7 +213,6 @@ fun AddPokemonScreen(
                 }
             }
 
-            // Nº Pokédex (solo lectura, se rellena automáticamente con la búsqueda)
             OutlinedTextField(
                 value = pokedexNumber,
                 onValueChange = { newValue ->
@@ -234,7 +232,6 @@ fun AddPokemonScreen(
                 )
             )
 
-            // Tipo primario
             PokemonDropdown(
                 label = "Tipo Principal",
                 options = pokemonTypes,
@@ -242,7 +239,6 @@ fun AddPokemonScreen(
                 onOptionSelected = { vm.setPrimaryTypeSelected(it) }
             )
 
-            // Tipo secundario
             PokemonDropdown(
                 label = "Tipo Secundario (Opcional)",
                 options = listOf("Ninguno") + pokemonTypes,
@@ -253,7 +249,6 @@ fun AddPokemonScreen(
                 }
             )
 
-            // Nivel y PS
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -290,7 +285,6 @@ fun AddPokemonScreen(
                 )
             }
 
-            // Ataque
             OutlinedTextField(
                 value = attack,
                 onValueChange = { if (it.all { char -> char.isDigit() }) vm.setAttack(it) },
@@ -307,7 +301,6 @@ fun AddPokemonScreen(
                 )
             )
 
-            // Notas
             OutlinedTextField(
                 value = notes,
                 onValueChange = { vm.setNotes(it) },

@@ -13,6 +13,9 @@ import org.ivan.pokmanager.domain.model.Pokemon
 import org.ivan.pokmanager.domain.model.PokemonStats
 import org.ivan.pokmanager.domain.usecase.SavePokemonUseCase
 
+/**
+ * Administra el formulario de alta de Pokemon y la consulta a la PokeAPI.
+ */
 class AddPokemonScreenViewModel(
     private val savePokemonUseCase: SavePokemonUseCase,
     private val pokemonApiService: PokemonApiService,
@@ -28,7 +31,6 @@ class AddPokemonScreenViewModel(
     private val _attack = MutableStateFlow("")
     private val _notes = MutableStateFlow("")
 
-    // Estado de búsqueda en la API
     private val _isLoadingFromApi = MutableStateFlow(false)
     private val _apiError = MutableStateFlow<String?>(null)
     private val _apiSuccess = MutableStateFlow(false)
@@ -45,7 +47,7 @@ class AddPokemonScreenViewModel(
     val apiError = _apiError.asStateFlow()
     val apiSuccess = _apiSuccess.asStateFlow()
 
-    // Lista de tipos que la UI utiliza. Mínima y estática; cambiar por fuente real si existe.
+    /** Lista de tipos disponibles para la UI. */
     val pokemonTypes: List<String> = listOf(
         "Normal", "Fuego", "Agua", "Planta", "Eléctrico", "Hielo", "Lucha",
         "Veneno", "Tierra", "Volador", "Psíquico", "Bicho", "Roca", "Fantasma",
@@ -68,7 +70,6 @@ class AddPokemonScreenViewModel(
         _secondaryType.value = value
     }
 
-    // Métodos que la UI estaba invocando (nombres distintos). Delegan a los setters existentes.
     fun setPrimaryTypeSelected(value: String) {
         setPrimaryType(value)
     }
@@ -93,7 +94,7 @@ class AddPokemonScreenViewModel(
         _notes.value = value
     }
 
-    /** Busca el Pokémon por nombre en la PokeAPI y autocompleta todos los campos */
+    /** Busca el Pokemon por nombre en la PokeAPI y autocompleta los campos principales. */
     fun fetchPokemonFromApi() {
         val query = _name.value.trim().lowercase()
         if (query.isBlank()) return
@@ -105,12 +106,10 @@ class AddPokemonScreenViewModel(
         viewModelScope.launch {
             runCatching { pokemonApiService.getPokemonByName(query) }
                 .onSuccess { response ->
-                    // Número de Pokédex
                     _pokedexNumber.value = response.id.toString()
 
                     if (_name.value.isBlank()) _name.value = response.name
 
-                    // Stats
                     val stats = response.toPokemonStats()
                     _hp.value = stats.hp.toString()
                     _attack.value = stats.attack.toString()
@@ -139,13 +138,15 @@ class AddPokemonScreenViewModel(
         _apiSuccess.value = false
     }
 
+    /**
+     * Guarda el Pokemon en Firestore e intenta obtener stats desde la PokeAPI si es posible.
+     */
     fun savePokemon() {
         val uid = firebaseAuth.currentUser?.uid ?: return
         val pokedexNumberInt = _pokedexNumber.value.toIntOrNull()
         val resolvedPokedexNumber = pokedexNumberInt ?: (System.currentTimeMillis() / 1000).toInt()
 
         viewModelScope.launch {
-            // Intentar cargar stats reales desde la PokeAPI si hay nombre o número de Pokédex
             val apiStats: PokemonStats? = runCatching {
                 val nameOrId = if (_name.value.isNotBlank()) _name.value.lowercase().trim()
                 else pokedexNumberInt?.toString()

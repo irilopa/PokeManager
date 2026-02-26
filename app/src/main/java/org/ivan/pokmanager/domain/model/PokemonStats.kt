@@ -1,5 +1,8 @@
 package org.ivan.pokmanager.domain.model
 
+/**
+ * Estadisticas basicas de un Pokemon.
+ */
 data class PokemonStats(
     val hp: Int = 0,
     val attack: Int = 0,
@@ -8,4 +11,3 @@ data class PokemonStats(
     val specialDefense: Int = 0,
     val speed: Int = 0
 )
-

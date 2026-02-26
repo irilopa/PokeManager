@@ -14,6 +14,9 @@ import org.ivan.pokmanager.domain.model.Pokemon
 import org.ivan.pokmanager.domain.usecase.DeletePokemonUseCase
 import org.ivan.pokmanager.domain.usecase.GetPokemonUseCase
 
+/**
+ * Provee la lista de Pokemon del usuario y expone acciones de eliminacion.
+ */
 class PokemonListViewModel(
     private val getPokemonUseCase: GetPokemonUseCase,
     private val deletePokemonUseCase: DeletePokemonUseCase,
@@ -22,6 +25,7 @@ class PokemonListViewModel(
 
     private val uid = firebaseAuth.currentUser?.uid
 
+    /** Flujo con el equipo Pokemon del usuario autenticado. */
     val pokemons: StateFlow<List<Pokemon>> =
         if (uid != null) {
             getPokemonUseCase(uid).stateIn(
@@ -33,6 +37,7 @@ class PokemonListViewModel(
             MutableStateFlow(emptyList())
         }
 
+    /** Elimina un Pokemon del equipo si existe uid y id valido. */
     fun removePokemon(pokemon: Pokemon) {
         if (pokemon.id.isBlank() || uid == null) return
 

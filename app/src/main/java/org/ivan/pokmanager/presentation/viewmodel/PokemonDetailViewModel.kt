@@ -11,6 +11,9 @@ import kotlinx.coroutines.flow.stateIn
 import org.ivan.pokmanager.domain.model.Pokemon
 import org.ivan.pokmanager.domain.usecase.GetPokemonUseCase
 
+/**
+ * Resuelve el Pokemon seleccionado a partir del numero de Pokedex.
+ */
 class PokemonDetailViewModel(
     private val pokemonId: Int,
     private val getPokemonUseCase: GetPokemonUseCase,
@@ -19,6 +22,7 @@ class PokemonDetailViewModel(
 
     private val uid = firebaseAuth.currentUser?.uid
 
+    /** Pokemon seleccionado o null si no hay coincidencia. */
     val pokemon: StateFlow<Pokemon?> = if (uid != null) {
         getPokemonUseCase(uid)
             .map { list -> list.firstOrNull { it.pokedexNumber == pokemonId } }
@@ -27,4 +31,3 @@ class PokemonDetailViewModel(
         MutableStateFlow(null)
     }
 }
-

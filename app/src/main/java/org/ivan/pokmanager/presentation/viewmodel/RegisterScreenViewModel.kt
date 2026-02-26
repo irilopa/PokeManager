@@ -10,6 +10,9 @@ import org.ivan.pokmanager.data.model.UserDto
 import org.ivan.pokmanager.domain.repository.AuthRepository
 import org.ivan.pokmanager.domain.repository.UserRepository
 
+/**
+ * Maneja el estado y el flujo de registro con Firebase Auth y Firestore.
+ */
 class RegisterScreenViewModel(
     private val authRepository: AuthRepository,
     private val userRepository: UserRepository
@@ -20,25 +23,35 @@ class RegisterScreenViewModel(
     private val _birthdate = MutableStateFlow("")
     private val _password = MutableStateFlow("")
 
-    // Estado del proceso de registro
     private val _isLoading = MutableStateFlow(false)
     private val _message = MutableStateFlow<String?>(null)
     private val _registerSuccess = MutableStateFlow(false)
 
+    /** Nombre ingresado por el usuario. */
     val name: StateFlow<String> = _name.asStateFlow()
+    /** Email ingresado por el usuario. */
     val email: StateFlow<String> = _email.asStateFlow()
+    /** Fecha de nacimiento ingresada por el usuario. */
     val birthdate: StateFlow<String> = _birthdate.asStateFlow()
+    /** Contrasena ingresada por el usuario. */
     val password: StateFlow<String> = _password.asStateFlow()
+    /** Indica si el registro esta en curso. */
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+    /** Mensaje de error o advertencia del proceso de registro. */
     val message: StateFlow<String?> = _message.asStateFlow()
+    /** Indica si el registro finalizo con exito. */
     val registerSuccess: StateFlow<Boolean> = _registerSuccess.asStateFlow()
 
     fun setName(name: String) { _name.value = name }
     fun setEmail(email: String) { _email.value = email }
     fun setBirthdate(birthdate: String) { _birthdate.value = birthdate }
     fun setPassword(password: String) { _password.value = password }
+    /** Limpia el mensaje mostrado por la UI. */
     fun clearMessage() { _message.value = null }
 
+    /**
+     * Crea la cuenta en Auth y guarda los datos de perfil en Firestore.
+     */
     fun registerUser() {
         val currentEmail = _email.value.trim()
         val currentPassword = _password.value
@@ -49,12 +62,10 @@ class RegisterScreenViewModel(
         _message.value = null
 
         viewModelScope.launch {
-            // 1. Crear cuenta en Firebase Auth
             val authResult = authRepository.register(currentEmail, currentPassword)
 
             authResult
                 .onSuccess { firebaseUser ->
-                    // 2. Guardar datos del usuario en Firestore
                     val userDto = UserDto(
                         name = currentName,
                         email = currentEmail,
@@ -62,8 +73,6 @@ class RegisterScreenViewModel(
                     )
                     runCatching { userRepository.saveUserData(firebaseUser.uid, userDto) }
                         .onFailure {
-                            // El usuario se creó en Auth pero no se guardaron los datos extra;
-                            // no es crítico, se puede reintentar.
                             _message.value = "Cuenta creada, pero no se pudieron guardar los datos de perfil."
                         }
 

@@ -31,6 +31,9 @@ import org.ivan.pokmanager.presentation.viewmodel.PokemonDetailViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
+/**
+ * Pantalla que muestra el detalle del Pokemon seleccionado.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PokemonDetailScreen(navController: NavController, pokemonId: Int) {

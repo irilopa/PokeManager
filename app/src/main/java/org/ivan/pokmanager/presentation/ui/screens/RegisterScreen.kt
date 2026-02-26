@@ -62,6 +62,9 @@ import org.ivan.pokmanager.presentation.ui.theme.PokeColors
 import org.ivan.pokmanager.presentation.viewmodel.RegisterScreenViewModel
 import org.koin.androidx.compose.koinViewModel
 
+/**
+ * Pantalla de registro de entrenador con validacion basica y feedback de estado.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
@@ -272,33 +275,6 @@ fun RegisterScreen(
             }
 
             Spacer(modifier = Modifier.height(32.dp))
-            /**
-             * Botón de registro encargado de validar los datos introducidos por el usuario
-             * antes de iniciar el proceso de creación de cuenta.
-             *
-             * La validación se realiza en el cliente con el objetivo de:
-             * - Mejorar la experiencia de usuario (feedback inmediato).
-             * - Evitar llamadas innecesarias al ViewModel con datos inválidos.
-             *
-             * Reglas de validación aplicadas:
-             * - El nombre no puede estar vacío.
-             * - El email no puede estar vacío y debe contener los caracteres básicos
-             *   '@' y '.' (validación sintáctica simple, no exhaustiva).
-             * - La fecha de nacimiento no puede estar vacía.
-             * - La contraseña debe tener una longitud mínima de 8 caracteres.
-             *
-             * En caso de error:
-             * - Se activa el estado `showError`.
-             * - Se muestra un mensaje descriptivo en `errorMessage`.
-             *
-             * Si todas las validaciones son correctas:
-             * - Se delega el registro de usuario al ViewModel mediante `registerUser()`,
-             *   respetando el patrón MVVM y la separación de responsabilidades.
-             *
-             * Nota:
-             * Esta validación no sustituye la validación en backend, que sigue siendo
-             * obligatoria por motivos de seguridad.
-             */
             Button(
                 onClick = {
                     when {

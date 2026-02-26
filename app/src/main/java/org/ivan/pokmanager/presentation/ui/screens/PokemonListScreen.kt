@@ -50,6 +50,9 @@ import org.ivan.pokmanager.presentation.ui.theme.PokeColors
 import org.ivan.pokmanager.presentation.viewmodel.PokemonListViewModel
 import org.koin.androidx.compose.koinViewModel
 
+/**
+ * Pantalla que muestra el equipo Pokemon del usuario y permite navegar al detalle.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PokemonListScreen(
@@ -101,7 +104,6 @@ fun PokemonListScreen(
             ) {
                 items(pokemons, key = { it.id.ifBlank { it.pokedexNumber.toString() } }) { pokemon ->
                     PokemonCard(pokemon, viewModel, primaryColor) {
-                        // cuando se pulsa la tarjeta navegamos a detalle
                         navController.navigate(Screen.PokemonDetail.createScreen(pokemon.pokedexNumber))
                     }
                 }
@@ -110,6 +112,9 @@ fun PokemonListScreen(
     }
 }
 
+/**
+ * Tarjeta interactiva que resume un Pokemon y permite eliminarlo.
+ */
 @Composable
 fun PokemonCard(
     pokemon: Pokemon,
@@ -203,7 +208,6 @@ fun PokemonCard(
 @Preview(showBackground = true)
 @Composable
 fun PokemonListScreenPreview() {
-    // Preview sin ViewModel real (Koin/Firestore). Solo mostramos la pantalla con navegación.
     PokemonListScreen(
         navController = rememberNavController()
     )

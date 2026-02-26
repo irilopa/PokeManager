@@ -1,6 +1,8 @@
 package org.ivan.pokmanager.presentation.navigation
 
-// Dentro de la sealed class definimos un object por cada ruta existenten
+/**
+ * Rutas de navegacion usadas por el NavHost.
+ */
 sealed class Screen(val route: String) {
 
     data object Login : Screen("login")
@@ -12,6 +14,9 @@ sealed class Screen(val route: String) {
     data object AddPokemon : Screen("addPokemon")
 
     data object PokemonDetail : Screen("pokemonDetail/{pokemonId}") {
+        /**
+         * Construye la ruta de detalle con el id de la Pokedex.
+         */
         fun createScreen(pokemonId: Int) = "pokemonDetail/$pokemonId"
     }
 }

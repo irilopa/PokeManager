@@ -2,6 +2,9 @@ package org.ivan.pokmanager.domain.model
 
 import com.google.firebase.firestore.DocumentId
 
+/**
+ * Modelo de dominio para un Pokemon registrado por el usuario.
+ */
 data class Pokemon(
     @DocumentId val id: String = "",
     val pokedexNumber: Int = 0,

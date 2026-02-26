@@ -34,6 +34,9 @@ import org.ivan.pokmanager.presentation.ui.theme.PokeColors
 import org.ivan.pokmanager.presentation.viewmodel.LoginScreenViewModel
 import org.koin.androidx.compose.koinViewModel
 
+/**
+ * Pantalla de inicio de sesion con validacion basica y navegacion al listado.
+ */
 @Composable
 fun LoginScreen(
     navController: NavController,
@@ -215,7 +218,6 @@ fun LoginScreen(
 @Composable
 fun LoginScreenPreview() {
     LoginScreen(
-        navController = rememberNavController(),
-        viewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+        navController = rememberNavController()
     )
 }

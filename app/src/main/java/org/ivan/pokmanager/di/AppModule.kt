@@ -16,22 +16,21 @@ import org.ivan.pokmanager.presentation.viewmodel.PokemonDetailViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
+/**
+ * Modulo Koin con dependencias de Firebase, repositorios, use cases y view models.
+ */
 val appModule = module {
-    // Singleton del FirebaseFirestore
     single { FirebaseFirestore.getInstance() }
     single { FirebaseAuth.getInstance() }
 
-    // Repositorio Firestore
     single { PokemonFirestoreRepository(get()) }
     single { AuthRepository(get()) }
     single { UserRepository(get()) }
 
-    // UseCases
     factory { GetPokemonUseCase(get()) }
     factory { DeletePokemonUseCase(get()) }
     factory { SavePokemonUseCase(get()) }
 
-    // ViewModels
     viewModel { AddPokemonScreenViewModel(get(), get(), get()) }
     viewModel { PokemonListViewModel(get(), get(),get()) }
 
