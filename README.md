@@ -1,46 +1,33 @@
 # PokéManager
 
-🧩 **Propuesta de proyecto Android — PokéManager**
+🧩 **Aplicacion Android — PokéManager**
 
 ---
 
-## 🎯 Objetivo general
+## 🎯 Objetivo
 
-Desarrollar una aplicación Android moderna que permita a los usuarios registrarse, iniciar sesión y gestionar su colección personal de Pokémon.
-Cada usuario podrá **añadir, editar o eliminar Pokémon**, ver estadísticas y consultar información general (tipo, nivel, habilidades, etc.).
+Aplicacion Android moderna que permite a los usuarios registrarse, iniciar sesion y gestionar su equipo personal de Pokemon.
+Cada usuario puede **anadir o eliminar Pokemon**, ver detalles y consultar datos generales desde la PokeAPI.
 
 ---
 
-## ⚙️ Características principales
+## ⚙️ Caracteristicas principales
 
-### 🔐 Autenticación de usuarios
+### 🔐 Autenticacion de usuarios
 
-* Registro mediante **correo electrónico y contraseña**.
-* Inicio de sesión seguro con validación de credenciales.
-* Persistencia de sesión mediante **EncryptedSharedPreferences**, **Room** o **Firebase Authentication** (según la fase del desarrollo).
+* Registro mediante **correo electronico y contrasena**.
+* Inicio de sesion con **Firebase Authentication**.
 
-### 🧩 Gestión de Pokémon
+### 🧩 Gestion de Pokemon
 
-* Añadir Pokémon con los siguientes campos:
+* Anadir Pokemon con autocompletado desde **PokeAPI**.
+* Guardado de Pokemon por usuario en **Firestore**.
+* Lista del equipo con navegacion a detalle.
+* Eliminacion de Pokemon.
 
-  * Nombre
-  * Tipo (único o múltiple)
-  * Nivel
-  * Descripción
-  * Imagen (subida o seleccionada de galería)
-  * Habilidades (lista opcional)
-* Editar o eliminar Pokémon existentes.
-* Ver la lista de Pokémon guardados por el usuario.
-* Filtros y orden por **tipo**, **nivel** o **nombre**.
-* Estadísticas generales:
+### 🎨 Interfaz y diseno
 
-  * Total de Pokémon.
-  * Distribución por tipo.
-  * Nivel medio.
-
-### 🎨 Interfaz y diseño
-
-* Estilo **Flat Design**, inspirado en la **Pokédex clásica**.
+* Estilo inspirado en la **Pokedex clasica**.
 * Logo visible en todas las pantallas principales.
 * Paleta de colores:
 
@@ -51,32 +38,32 @@ Cada usuario podrá **añadir, editar o eliminar Pokémon**, ver estadísticas y
 
 ---
 
-## 🧰 Tecnologías recomendadas
+## 🧰 Tecnologias
 
 * **Lenguaje:** Kotlin
-* **Arquitectura:** MVVM (ViewModel + LiveData / Flow)
-* **Persistencia:** Room o Firebase Firestore
-* **Backend / Cloud:** Firebase o AWS Amplify
-* **UI:** Jetpack Compose o XML con Jetpack Navigation
-* **Cargas de imagen:** Coil o Glide
+* **Arquitectura:** MVVM (ViewModel + Flow)
+* **Persistencia:** Firebase Firestore
+* **Backend / Cloud:** Firebase Auth
+* **UI:** Jetpack Compose + Navigation
+* **Imagenes:** Coil
 * **Concurrencia:** Coroutines
 
 ---
 
 ## 🧱 Estructura de datos (ejemplo)
 
-Ejemplo de entidad Pokémon (para Room o Firestore):
+ Ejemplo de entidad Pokémon (para Room o Firestore):
 
 ```json
 {
   "id": "uuid-o-int",
   "ownerUserId": "user-uid",
   "name": "Pikachu",
-  "types": ["Eléctrico"],
+  "types": "Electrico",
   "level": 25,
   "description": "Ratón Pokémon. Le encantan las baterías.",
   "imageUrl": "path/o-url",
-  "abilities": ["Impactrueno", "Static"],
+  "moves": ["Impactrueno", "Placaje"],
   "createdAt": "2025-10-26T17:00:00Z",
   "updatedAt": "2025-10-26T17:05:00Z"
 }
@@ -86,50 +73,45 @@ Ejemplo de entidad Pokémon (para Room o Firestore):
 
 ## 💡 Casos de uso principales
 
-* Registro de usuario.
-* Inicio y cierre de sesión.
-* Creación de Pokémon asociado a un usuario.
-* Edición y eliminación de Pokémon.
-* Navegación por la lista, búsqueda y filtrado.
-* Visualización de detalles y estadísticas globales.
+ * Registro de usuario.
+ * Inicio y cierre de sesión.
+ * Creación de Pokémon asociado a un usuario.
+ * Edición y eliminación de Pokémon.
+ * Navegacion por la lista y detalle.
 
 ---
 
-## 🚀 Guía rápida de desarrollo / instalación
+## 🚀 Guia rapida de desarrollo / instalacion
 
-1. Clonar el repositorio.
-2. Abrir el proyecto en **Android Studio** (versión reciente).
-3. Configurar las dependencias:
+ 1. Clonar el repositorio.
+ 2. Abrir el proyecto en **Android Studio** (versión reciente).
+ 3. Configurar las dependencias:
 
-   * Si usas Firebase: añadir `google-services.json` en `app/` y configurar el proyecto en Firebase Console.
-   * Si usas Room: no se requiere configuración extra.
-4. Ejecutar en emulador o dispositivo físico.
-5. (Opcional) Cargar datos de ejemplo desde un JSON inicial.
+   * Añadir `google-services.json` en `app/` y configurar el proyecto en Firebase Console.
+ 4. Ejecutar en emulador o dispositivo físico.
+ 5. (Opcional) Cargar datos de ejemplo desde un JSON inicial.
 
-### 🔧 Configuración Firebase (opcional)
+### 🔧 Configuracion Firebase
 
-* Activar **Authentication (Email/Password)**.
-* Configurar **Firestore / Realtime Database** con reglas seguras (solo acceso por usuario autenticado).
-* Configurar **Firebase Storage** si se gestionan imágenes.
+ * Activar **Authentication (Email/Password)**.
+ * Configurar **Firestore** con reglas seguras (solo acceso por usuario autenticado).
 
 ---
 
-## 🧭 Diseño y UX
+## 🧭 Diseno y UX
 
 ### Pantallas mínimas
 
-* **Splash / Logo inicial**
 * **Login / Registro**
-* **Lista principal de Pokémon**
-* **Detalle de Pokémon**
-* **Formulario de creación / edición**
-* **Perfil o ajustes (opcional)**
+* **Lista principal de Pokemon**
+* **Detalle de Pokemon**
+* **Formulario de creacion**
 
 ### Componentes reutilizables
 
 * Tarjeta de Pokémon.
 * Barra superior con logo.
-* Buscador y filtros dinámicos.
+* Buscador y filtros dinamicos (pendiente).
 
 🎨 **Estilo general:**
 Botones principales en rojo (`#E3350D`) y elementos destacados en amarillo (`#FFCC00`).
@@ -140,10 +122,10 @@ Botones principales en rojo (`#E3350D`) y elementos destacados en amarillo (`#FF
 
 | Fase       | Descripción                                                         | Objetivo            |
 | ---------- | ------------------------------------------------------------------- | ------------------- |
-| **MVP**    | Autenticación básica y CRUD local                                   | Base funcional      |
-| **Fase 2** | Sincronización en la nube (Firebase / Amplify) y subida de imágenes | Persistencia remota |
-| **Fase 3** | Filtros avanzados, estadísticas, integración con PokéAPI            | Versión avanzada    |
-| **Fase 4** | Compartir colecciones, soporte multidioma, UI mejorada              | Versión final       |
+| **MVP**    | Autenticacion basica y CRUD en Firestore                            | Base funcional      |
+| **Fase 2** | Integracion con PokeAPI y autocompletado                            | Datos enriquecidos  |
+| **Fase 3** | Filtros avanzados y estadisticas                                    | Version avanzada    |
+| **Fase 4** | Compartir colecciones, soporte multidioma, UI mejorada              | Version final       |
 
 ---
 
@@ -170,4 +152,4 @@ Botones principales en rojo (`#E3350D`) y elementos destacados en amarillo (`#FF
 Licencia **MIT**
 ---
 
-> 💬 Proyecto académico Android realizado en Kotlin con enfoque profesional, centrado en arquitectura limpia, diseño intuitivo y escalabilidad mediante servicios en la nube.
+> 💬 Proyecto academico Android realizado en Kotlin con enfoque profesional, centrado en arquitectura limpia, diseno intuitivo y escalabilidad mediante servicios en la nube.
