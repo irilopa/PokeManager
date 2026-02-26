@@ -91,6 +91,6 @@ class UserFirestoreRepository(val firestore: FirebaseFirestore) {
         }
     }
 
-    companion object
+
 
 }

@@ -108,7 +108,6 @@ class AddPokemonScreenViewModel(
                     // Número de Pokédex
                     _pokedexNumber.value = response.id.toString()
 
-                    // Nombre capitalizado (en inglés desde la API, pero usamos el que escribió el usuario)
                     if (_name.value.isBlank()) _name.value = response.name
 
                     // Stats
@@ -116,7 +115,6 @@ class AddPokemonScreenViewModel(
                     _hp.value = stats.hp.toString()
                     _attack.value = stats.attack.toString()
 
-                    // Tipos (traducidos al español)
                     val typeNames = response.types
                         .sortedBy { it.slot }
                         .map { it.type.toSpanish() }
@@ -133,8 +131,13 @@ class AddPokemonScreenViewModel(
         }
     }
 
-    fun clearApiError() { _apiError.value = null }
-    fun clearApiSuccess() { _apiSuccess.value = false }
+    fun clearApiError() {
+        _apiError.value = null
+    }
+
+    fun clearApiSuccess() {
+        _apiSuccess.value = false
+    }
 
     fun savePokemon() {
         val uid = firebaseAuth.currentUser?.uid ?: return
@@ -145,7 +148,7 @@ class AddPokemonScreenViewModel(
             // Intentar cargar stats reales desde la PokeAPI si hay nombre o número de Pokédex
             val apiStats: PokemonStats? = runCatching {
                 val nameOrId = if (_name.value.isNotBlank()) _name.value.lowercase().trim()
-                               else pokedexNumberInt?.toString()
+                else pokedexNumberInt?.toString()
                 if (nameOrId != null) {
                     pokemonApiService.getPokemonByName(nameOrId).toPokemonStats()
                 } else null
@@ -177,7 +180,6 @@ class AddPokemonScreenViewModel(
     }
 
     private fun buildOfficialArtworkUrl(pokedexNumber: Int?): String {
-        // Si no hay número válido, no forzamos URL.
         if (pokedexNumber == null || pokedexNumber <= 0) return ""
         return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/$pokedexNumber.png"
     }

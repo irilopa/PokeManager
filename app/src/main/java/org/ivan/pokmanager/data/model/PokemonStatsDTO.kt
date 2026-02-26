@@ -1,6 +1,6 @@
 package org.ivan.pokmanager.data.model
 
-data class PokemonStats(
+data class PokemonStatsDTO(
     val hp: Int,
     val attack: Int,
     val defense: Int,

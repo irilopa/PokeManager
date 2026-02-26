@@ -1,6 +1,5 @@
 package org.ivan.pokmanager.presentation.ui.screens
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -38,6 +37,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,7 +54,6 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.ivan.pokmanager.R
@@ -73,12 +72,23 @@ fun RegisterScreen(
     val email by viewModel.email.collectAsState()
     val password by viewModel.password.collectAsState()
     val birthdate by viewModel.birthdate.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val message by viewModel.message.collectAsState()
+    val registerSuccess by viewModel.registerSuccess.collectAsState()
 
     var showError by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
     var isPasswordVisible by remember { mutableStateOf(false) }
 
     val primaryColor = PokeColors.PokeRed
+
+    LaunchedEffect(registerSuccess) {
+        if (registerSuccess) {
+            navController.navigate(Screen.Login.route) {
+                popUpTo(Screen.Register.route) { inclusive = true }
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -131,6 +141,7 @@ fun RegisterScreen(
                 onValueChange = {
                     viewModel.setName(it)
                     showError = false
+                    viewModel.clearMessage()
                 },
                 label = { Text("Nombre") },
                 leadingIcon = {
@@ -153,6 +164,7 @@ fun RegisterScreen(
                 onValueChange = {
                     viewModel.setEmail(it)
                     showError = false
+                    viewModel.clearMessage()
                 },
                 label = { Text("Email") },
                 leadingIcon = {
@@ -175,6 +187,7 @@ fun RegisterScreen(
                 onValueChange = {
                     viewModel.setBirthdate(it)
                     showError = false
+                    viewModel.clearMessage()
                 },
                 label = { Text("Fecha de Nacimiento") },
                 placeholder = { Text("DD/MM/AAAA") },
@@ -198,6 +211,7 @@ fun RegisterScreen(
                 onValueChange = {
                     viewModel.setPassword(it)
                     showError = false
+                    viewModel.clearMessage()
                 },
                 label = { Text("Contraseña") },
                 leadingIcon = {
@@ -231,7 +245,16 @@ fun RegisterScreen(
                     fontSize = 14.sp,
                     modifier = Modifier.fillMaxWidth()
                 )
+            } else if (!message.isNullOrBlank()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = message ?: "",
+                    color = primaryColor,
+                    fontSize = 14.sp,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
+
             Spacer(modifier = Modifier.height(32.dp))
             Row(
                 verticalAlignment = Alignment.CenterVertically
@@ -282,26 +305,31 @@ fun RegisterScreen(
                         name.isBlank() -> {
                             showError = true
                             errorMessage = "Ingresa tu nombre"
+                            viewModel.clearMessage()
                         }
 
                         email.isBlank() -> {
                             showError = true
                             errorMessage = "Ingresa tu email"
+                            viewModel.clearMessage()
                         }
 
                         !email.contains("@") || !email.contains(".") -> {
                             showError = true
                             errorMessage = "Email inválido"
+                            viewModel.clearMessage()
                         }
 
                         birthdate.isBlank() -> {
                             showError = true
                             errorMessage = "Ingresa tu fecha de nacimiento"
+                            viewModel.clearMessage()
                         }
 
                         password.length < 8 -> {
                             showError = true
                             errorMessage = "La contraseña debe tener al menos 8 caracteres"
+                            viewModel.clearMessage()
                         }
 
                         else -> {
@@ -309,13 +337,18 @@ fun RegisterScreen(
                         }
                     }
                 },
+                enabled = !isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = primaryColor)
             ) {
-                Text("Registrarse", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    text = if (isLoading) "Registrando..." else "Registrarse",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -331,12 +364,10 @@ fun RegisterScreen(
     }
 }
 
-@SuppressLint("ViewModelConstructorInComposable")
 @Preview(showBackground = true)
 @Composable
 fun RegisterScreenPreview() {
     RegisterScreen(
-        navController = rememberNavController(),
-        viewModel = RegisterScreenViewModel()
+        navController = rememberNavController()
     )
 }

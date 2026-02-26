@@ -12,6 +12,7 @@ import org.ivan.pokmanager.presentation.viewmodel.AddPokemonScreenViewModel
 import org.ivan.pokmanager.presentation.viewmodel.LoginScreenViewModel
 import org.ivan.pokmanager.presentation.viewmodel.PokemonListViewModel
 import org.ivan.pokmanager.presentation.viewmodel.RegisterScreenViewModel
+import org.ivan.pokmanager.presentation.viewmodel.PokemonDetailViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
@@ -35,6 +36,7 @@ val appModule = module {
     viewModel { PokemonListViewModel(get(), get(),get()) }
 
     viewModel { LoginScreenViewModel(get()) }
-    viewModel { RegisterScreenViewModel() }
+    viewModel { RegisterScreenViewModel(get(), get()) }
+    viewModel { (pokemonId: Int) -> PokemonDetailViewModel(pokemonId, get(), get()) }
 
 }
