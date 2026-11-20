@@ -51,9 +51,23 @@ La aplicación utiliza MVVM y organiza el código en capas de presentación, dom
 
 | Inicio de sesión | Colección | Detalle |
 | --- | --- | --- |
-| [COMPLETAR: captura de inicio de sesión] | [COMPLETAR: captura de la colección] | [COMPLETAR: captura del detalle] |
+| <img src="docs/screenshots/login.png" alt="Pantalla de inicio de sesión" width="240"> | <img src="docs/screenshots/coleccion.png" alt="Colección del usuario con buscador y filtros por tipo" width="240"> | <img src="docs/screenshots/detalle.png" alt="Detalle de Charizard con tipos y estadísticas base" width="240"> |
 
-**Demo:** [COMPLETAR: enlace a vídeo o GIF]
+| Filtro por tipo | Búsqueda por nombre | Debilidades y resistencias |
+| --- | --- | --- |
+| <img src="docs/screenshots/filtro-tipo.png" alt="Colección filtrada por el tipo Volador" width="240"> | <img src="docs/screenshots/busqueda.png" alt="Búsqueda «ga» en la colección" width="240"> | <img src="docs/screenshots/debilidades.png" alt="Debilidades, resistencias e inmunidades de Charizard" width="240"> |
+
+**Demo:**
+
+<img src="docs/screenshots/demo.gif" alt="Recorrido por la app: login, colección, filtro, detalle, debilidades y búsqueda" width="300">
+
+Las capturas se generan con `ReadmeScreenshotsTest`, que siembra una colección de ejemplo en Firebase Emulator Suite y recorre la app con Robolectric:
+
+```bash
+firebase emulators:exec --only auth,firestore --project pokemanager-6113d "./gradlew testDebugUnitTest --tests '*ReadmeScreenshotsTest*'"
+```
+
+Las imágenes quedan en `app/build/readme-screenshots/`.
 
 ## ✅ Requisitos previos
 
