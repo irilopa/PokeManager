@@ -7,6 +7,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import org.koin.core.context.stopKoin
 import java.net.Socket
+import java.util.UUID
 
 /**
  * Configuracion comun de los tests que usan Firebase Emulator Suite con Robolectric.
@@ -18,6 +19,9 @@ object FirebaseEmulators {
     const val FIRESTORE_PORT = 8080
 
     private var configured = false
+
+    /** Credencial aleatoria para usuarios de prueba que solo existen en el emulador. */
+    fun randomCredential(): String = UUID.randomUUID().toString()
 
     fun areRunning(): Boolean = isUp(AUTH_PORT) && isUp(FIRESTORE_PORT)
 

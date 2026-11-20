@@ -35,7 +35,6 @@ import java.net.HttpURLConnection
 import java.net.Proxy
 import java.net.URL
 import java.time.Duration
-import java.util.UUID
 
 /**
  * Genera las capturas del README con una coleccion de ejemplo sembrada en Firebase Emulator Suite.
@@ -54,8 +53,7 @@ class ReadmeScreenshotsTest {
 
     companion object {
         private const val PROJECT = "pokemanager-6113d"
-        /** Usuario de prueba que solo existe en el emulador: se genera en cada ejecucion. */
-        private val testPassword = "e2e-" + UUID.randomUUID()
+        private val credential = FirebaseEmulators.randomCredential()
 
 
         @BeforeClass
@@ -105,7 +103,7 @@ class ReadmeScreenshotsTest {
         val uid = http(
             "POST",
             "http://127.0.0.1:9099/identitytoolkit.googleapis.com/v1/accounts:signUp?key=fake",
-            JSONObject().put("email", email).put("password", testPassword).put("returnSecureToken", true)
+            JSONObject().put("email", email).put("password", credential).put("returnSecureToken", true)
         ).getString("localId")
 
         fun int(v: Int) = JSONObject().put("integerValue", v.toString())
@@ -163,7 +161,7 @@ class ReadmeScreenshotsTest {
         waitForText("Iniciar Sesión")
         compose.onNodeWithText("Email").performTextInput(email)
         shot("01_login")
-        compose.onNodeWithText("Contraseña").performTextInput(testPassword)
+        compose.onNodeWithText("Contraseña").performTextInput(credential)
         compose.onNodeWithText("Iniciar Sesión").performClick()
 
         waitForText("Nv. 25 · Eléctrico")

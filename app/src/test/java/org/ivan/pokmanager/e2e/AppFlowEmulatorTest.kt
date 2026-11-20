@@ -29,7 +29,6 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import java.io.File
-import java.util.UUID
 
 /**
  * Recorre la app completa (Koin + SDK real de Firebase) contra Firebase Emulator Suite.
@@ -101,8 +100,8 @@ class AppFlowEmulatorTest {
     @Test
     fun registro_login_equipo_detalle_busqueda_y_logout() {
         val email = "ash${System.currentTimeMillis()}@test.com"
-        // Usuario de prueba que solo existe en el emulador: se genera en cada ejecucion.
-        val testPassword = "e2e-" + UUID.randomUUID()
+        val credential = FirebaseEmulators.randomCredential()
+        val wrongCredential = FirebaseEmulators.randomCredential()
 
         // Registro: la casilla de privacidad es obligatoria
         compose.waitForText("Iniciar Sesión")
@@ -111,7 +110,7 @@ class AppFlowEmulatorTest {
         type("Nombre", "Ash")
         type("Email", email)
         type("Fecha de Nacimiento", "01/04/1997")
-        type("Contraseña", testPassword)
+        type("Contraseña", credential)
         compose.onNodeWithText("Registrarse").performScrollTo().performClick()
         compose.waitForText("Debes aceptar la Política de Privacidad")
         compose.onNodeWithText("Al registrarte aceptas nuestra Política de Privacidad").performScrollTo().performClick()
@@ -124,14 +123,14 @@ class AppFlowEmulatorTest {
         // Login con contraseña incorrecta: mensaje en español
         logout()
         type("Email", email)
-        type("Contraseña", "incorrecta")
+        type("Contraseña", wrongCredential)
         compose.onNodeWithText("Iniciar Sesión").performClick()
         compose.waitForText("Email o contraseña incorrectos")
         shot("02_login_error")
 
         // Login correcto
         compose.onNodeWithText("Contraseña").performTextClearance()
-        type("Contraseña", testPassword)
+        type("Contraseña", credential)
         compose.onNodeWithText("Iniciar Sesión").performClick()
         compose.waitForText("Añadir mi primer Pokémon")
 
