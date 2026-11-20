@@ -15,7 +15,6 @@ data class PokemonResponse(
     val types: List<TypeSlotDTO> = emptyList()
 )
 /** Convierte la lista de stats en el modelo de dominio. */
-@Suppress("unused")
 fun PokemonResponse.toPokemonStats(): PokemonStats {
 
     fun getStat(statName: String): Int =

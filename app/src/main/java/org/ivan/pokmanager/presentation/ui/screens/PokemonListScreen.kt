@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +17,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CatchingPokemon
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -27,8 +30,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,7 +51,11 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import org.ivan.pokmanager.domain.model.Pokemon
 import org.ivan.pokmanager.presentation.navigation.Screen
+import org.ivan.pokmanager.presentation.state.UiState
 import org.ivan.pokmanager.presentation.ui.components.ActionMenu
+import org.ivan.pokmanager.presentation.ui.components.ErrorContent
+import org.ivan.pokmanager.presentation.ui.components.LoadingContent
+import org.ivan.pokmanager.presentation.ui.components.MessageContent
 import org.ivan.pokmanager.presentation.ui.theme.PokeColors
 import org.ivan.pokmanager.presentation.viewmodel.PokemonListViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -60,51 +70,80 @@ fun PokemonListScreen(
     viewModel: PokemonListViewModel = koinViewModel()
 ) {
 
-    val pokemons by viewModel.pokemons.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+    val deleteError by viewModel.deleteError.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
     val primaryColor = PokeColors.PokeRed
-    Scaffold(
+    val goToAddPokemon = { navController.navigate(Screen.AddPokemon.route) }
 
+    LaunchedEffect(deleteError) {
+        deleteError?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearDeleteError()
+        }
+    }
+
+    Scaffold(
         topBar = {
             ActionMenu(
                 title = "Mi Equipo Pokémon",
-                onAddPokemon = {
-                    navController.navigate(Screen.AddPokemon.route)
-                },
+                onAddPokemon = goToAddPokemon,
                 onLogout = {
+                    viewModel.logout()
                     navController.navigate(Screen.Login.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
+                        // Vacia toda la pila para que «Atras» no vuelva al equipo.
+                        popUpTo(navController.graph.id) { inclusive = true }
+                        launchSingleTop = true
                     }
                 }
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { navController.navigate(Screen.AddPokemon.route) },
-                containerColor = primaryColor,
-                contentColor = Color.White
-            ) {
-                Text("+")
+            if (uiState is UiState.Success) {
+                FloatingActionButton(
+                    onClick = goToAddPokemon,
+                    containerColor = primaryColor,
+                    contentColor = Color.White
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Añadir Pokémon")
+                }
             }
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = Color.White
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .background(Color.White)
-                .padding(horizontal = 32.dp, vertical = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
+        val contentModifier = Modifier
+            .padding(innerPadding)
+            .fillMaxSize()
+            .background(Color.White)
 
-            Spacer(modifier = Modifier.height(8.dp))
+        when (val state = uiState) {
+            UiState.Loading -> LoadingContent(contentModifier)
 
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(pokemons, key = { it.id.ifBlank { it.pokedexNumber.toString() } }) { pokemon ->
-                    PokemonCard(pokemon, viewModel, primaryColor) {
-                        navController.navigate(Screen.PokemonDetail.createScreen(pokemon.pokedexNumber))
+            is UiState.Error -> ErrorContent(
+                message = state.message,
+                onRetry = viewModel::retry,
+                modifier = contentModifier
+            )
+
+            is UiState.Success -> if (state.data.isEmpty()) {
+                MessageContent(
+                    icon = Icons.Default.CatchingPokemon,
+                    message = "Todavía no tienes Pokémon en tu equipo.\n¡Registra el primero para empezar!",
+                    actionLabel = "Añadir mi primer Pokémon",
+                    onAction = goToAddPokemon,
+                    modifier = contentModifier
+                )
+            } else {
+                LazyColumn(
+                    modifier = contentModifier.padding(horizontal = 32.dp),
+                    contentPadding = PaddingValues(vertical = 24.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(state.data, key = { it.id }) { pokemon ->
+                        PokemonCard(pokemon, viewModel, primaryColor) {
+                            navController.navigate(Screen.PokemonDetail.createScreen(pokemon.id))
+                        }
                     }
                 }
             }
@@ -160,7 +199,7 @@ fun PokemonCard(
                     color = Color.Black
                 )
                 Text(
-                    text = pokemon.types,
+                    text = if (pokemon.level > 0) "Nv. ${pokemon.level} · ${pokemon.types}" else pokemon.types,
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.Gray
                 )

@@ -84,6 +84,22 @@ El repositorio incluye Gradle Wrapper 8.13; no es necesario instalar Gradle por 
    ./gradlew assembleDebug
    ```
 
+### Pruebas
+
+Pruebas unitarias (repositorios falsos en memoria, sin red):
+
+```bash
+./gradlew testDebugUnitTest
+```
+
+Prueba de extremo a extremo: recorre la app completa con Robolectric (registro, login, equipo vacío, validación, guardado, detalle y cierre de sesión) contra Firebase Emulator Suite, sin tocar el proyecto real. Requiere [Firebase CLI](https://firebase.google.com/docs/cli) y deja capturas en `app/build/e2e-screenshots/`. Sin los emuladores arrancados, esta prueba se omite.
+
+```bash
+firebase emulators:exec --only auth,firestore --project pokemanager-6113d "./gradlew testDebugUnitTest --tests '*AppFlowEmulatorTest*'"
+```
+
+Las reglas de seguridad de Firestore están en `firestore.rules`.
+
 ## 🔧 Variables de entorno
 
 El código de la aplicación no define variables de entorno propias para Firebase ni para PokéAPI. Firebase se configura mediante `app/google-services.json`; la URL base de PokéAPI está definida en el código. No se requiere un archivo `.env`.

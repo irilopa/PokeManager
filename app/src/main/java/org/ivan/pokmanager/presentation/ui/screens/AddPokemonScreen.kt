@@ -34,6 +34,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -41,9 +43,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -55,6 +55,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import org.ivan.pokmanager.domain.validation.PokemonField
+import org.ivan.pokmanager.domain.validation.PokemonFormValidator
+import org.ivan.pokmanager.presentation.state.SaveState
 import org.ivan.pokmanager.presentation.ui.components.PokemonDropdown
 import org.ivan.pokmanager.presentation.ui.theme.PokeColors
 import org.ivan.pokmanager.presentation.viewmodel.AddPokemonScreenViewModel
@@ -71,20 +74,20 @@ fun AddPokemonScreen(
 ) {
     val vm: AddPokemonScreenViewModel = viewModel ?: koinViewModel()
 
-    val name by vm.name.collectAsState()
-    val pokedexNumber by vm.pokedexNumber.collectAsState()
-    val primaryType by vm.primaryType.collectAsState()
-    val secondaryType by vm.secondaryType.collectAsState()
-    val level by vm.level.collectAsState()
+    val form by vm.form.collectAsState()
     val hp by vm.hp.collectAsState()
     val attack by vm.attack.collectAsState()
-    val notes by vm.notes.collectAsState()
+    val errors by vm.errors.collectAsState()
+    val saveState by vm.saveState.collectAsState()
     val isLoadingFromApi by vm.isLoadingFromApi.collectAsState()
     val apiError by vm.apiError.collectAsState()
     val apiSuccess by vm.apiSuccess.collectAsState()
 
-    var isNameError by remember { mutableStateOf(false) }
+    val name = form.name
+    val nameError = errors[PokemonField.NAME]
     val pokemonTypes = vm.pokemonTypes
+    val isSaving = saveState is SaveState.Saving
+    val snackbarHostState = remember { SnackbarHostState() }
 
     val primaryColor = PokeColors.PokeRed
 
@@ -95,7 +98,17 @@ fun AddPokemonScreen(
         }
     }
 
+    // Solo se vuelve a la lista cuando Firestore confirma el guardado.
+    LaunchedEffect(saveState) {
+        when (val state = saveState) {
+            SaveState.Success -> navController.navigateUp()
+            is SaveState.Error -> snackbarHostState.showSnackbar(state.message)
+            else -> Unit
+        }
+    }
+
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("Registrar Pokémon") },
@@ -147,7 +160,6 @@ fun AddPokemonScreen(
                     value = name,
                     onValueChange = {
                         vm.setName(it)
-                        isNameError = false
                         vm.clearApiError()
                     },
                     label = { Text("Nombre del Pokémon") },
@@ -155,10 +167,10 @@ fun AddPokemonScreen(
                     leadingIcon = {
                         Icon(Icons.Default.Pets, contentDescription = null, tint = primaryColor)
                     },
-                    isError = isNameError || apiError != null,
+                    isError = nameError != null || apiError != null,
                     supportingText = {
                         when {
-                            isNameError -> Text("El nombre es obligatorio", color = MaterialTheme.colorScheme.error)
+                            nameError != null -> Text(nameError, color = MaterialTheme.colorScheme.error)
                             apiError != null -> Text(apiError!!, color = MaterialTheme.colorScheme.error)
                             apiSuccess -> Text(
                                 "✓ Datos autocompletados desde la Pokédex",
@@ -168,7 +180,7 @@ fun AddPokemonScreen(
                     },
                     trailingIcon = {
                         when {
-                            isNameError || apiError != null ->
+                            nameError != null || apiError != null ->
                                 Icon(Icons.Default.Warning, "Error", tint = MaterialTheme.colorScheme.error)
                             apiSuccess ->
                                 Icon(Icons.Default.CheckCircle, "OK", tint = Color(0xFF388E3C))
@@ -214,14 +226,16 @@ fun AddPokemonScreen(
             }
 
             OutlinedTextField(
-                value = pokedexNumber,
+                value = form.pokedexNumber,
                 onValueChange = { newValue ->
                     if (newValue.all { it.isDigit() } && newValue.length <= 5) {
                         vm.setPokedexNumber(newValue)
                     }
                 },
-                label = { Text("Nº Pokédex") },
+                label = { Text("Nº Pokédex (opcional)") },
                 placeholder = { Text("Se rellena al buscar") },
+                isError = errors[PokemonField.POKEDEX_NUMBER] != null,
+                supportingText = errors[PokemonField.POKEDEX_NUMBER]?.let { { Text(it) } },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
@@ -235,18 +249,20 @@ fun AddPokemonScreen(
             PokemonDropdown(
                 label = "Tipo Principal",
                 options = pokemonTypes,
-                selectedOption = primaryType,
-                onOptionSelected = { vm.setPrimaryTypeSelected(it) }
+                selectedOption = form.primaryType,
+                onOptionSelected = { vm.setPrimaryType(it) },
+                errorMessage = errors[PokemonField.PRIMARY_TYPE]
             )
 
             PokemonDropdown(
                 label = "Tipo Secundario (Opcional)",
                 options = listOf("Ninguno") + pokemonTypes,
-                selectedOption = secondaryType.ifBlank { "" },
+                selectedOption = form.secondaryType,
                 onOptionSelected = {
                     val selected = if (it == "Ninguno") "" else it
-                    vm.setSecondaryTypeSelected(selected)
-                }
+                    vm.setSecondaryType(selected)
+                },
+                errorMessage = errors[PokemonField.SECONDARY_TYPE]
             )
 
             Row(
@@ -254,13 +270,17 @@ fun AddPokemonScreen(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 OutlinedTextField(
-                    value = level,
+                    value = form.level,
                     onValueChange = { newValue ->
                         if (newValue.all { it.isDigit() } && newValue.length <= 3) {
                             vm.setLevel(newValue)
                         }
                     },
                     label = { Text("Nivel") },
+                    placeholder = { Text("1-100") },
+                    singleLine = true,
+                    isError = errors[PokemonField.LEVEL] != null,
+                    supportingText = errors[PokemonField.LEVEL]?.let { { Text(it) } },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp),
@@ -302,9 +322,16 @@ fun AddPokemonScreen(
             )
 
             OutlinedTextField(
-                value = notes,
+                value = form.notes,
                 onValueChange = { vm.setNotes(it) },
                 label = { Text("Notas adicionales") },
+                isError = errors[PokemonField.NOTES] != null,
+                supportingText = {
+                    Text(
+                        errors[PokemonField.NOTES]
+                            ?: "${form.notes.length}/${PokemonFormValidator.MAX_NOTES_LENGTH}"
+                    )
+                },
                 placeholder = { Text("¿Dónde lo capturaste? ¿Es shiny?") },
                 minLines = 3,
                 maxLines = 5,
@@ -319,21 +346,25 @@ fun AddPokemonScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = {
-                    if (name.isBlank()) {
-                        isNameError = true
-                    } else {
-                        vm.savePokemon()
-                        navController.navigateUp()
-                    }
-                },
+                onClick = vm::savePokemon,
+                enabled = !isSaving && saveState !is SaveState.Success,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = primaryColor)
             ) {
-                Text("Guardar Pokémon", fontSize = 18.sp)
+                if (isSaving) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                    Spacer(modifier = Modifier.size(12.dp))
+                    Text("Guardando…", fontSize = 18.sp)
+                } else {
+                    Text("Guardar Pokémon", fontSize = 18.sp)
+                }
             }
         }
     }

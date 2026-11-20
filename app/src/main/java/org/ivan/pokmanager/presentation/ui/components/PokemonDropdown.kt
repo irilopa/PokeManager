@@ -30,7 +30,8 @@ fun PokemonDropdown(
     options: List<String>,
     selectedOption: String,
     onOptionSelected: (String) -> Unit,
-    primaryColor: Color = PokeColors.PokeRed
+    primaryColor: Color = PokeColors.PokeRed,
+    errorMessage: String? = null
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -45,6 +46,8 @@ fun PokemonDropdown(
             readOnly = true,
             label = { Text(label) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            isError = errorMessage != null,
+            supportingText = errorMessage?.let { { Text(it) } },
             colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(
                 focusedBorderColor = primaryColor,
                 unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f)

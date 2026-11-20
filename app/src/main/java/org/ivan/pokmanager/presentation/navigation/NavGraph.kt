@@ -30,8 +30,7 @@ fun NavGraph(navController: NavHostController) {
             AddPokemonScreen(navController)
         }
         composable(Screen.PokemonDetail.route) { backStackEntry ->
-            val idArg = backStackEntry.arguments?.getString("pokemonId")
-            val pokemonId = idArg?.toIntOrNull() ?: -1
+            val pokemonId = backStackEntry.arguments?.getString("pokemonId").orEmpty()
             PokemonDetailScreen(navController, pokemonId)
         }
     }
