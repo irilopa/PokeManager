@@ -13,6 +13,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.core.app.ApplicationProvider
@@ -87,19 +88,29 @@ class AppFlowEmulatorTest {
         compose.onNodeWithText(label).performScrollTo().performTextInput(value)
     }
 
-    private fun addPokemon(name: String, level: String) {
+    private fun addPokemon(name: String, level: String, notes: String = "") {
         type("Nombre del Pokémon", name)
         compose.onNodeWithText("Tipo Principal").performScrollTo().performClick()
         compose.onNodeWithText("Eléctrico").performClick()
         type("Nivel", level)
+        if (notes.isNotEmpty()) type("Notas adicionales", notes)
         compose.onNodeWithText("Guardar Pokémon").performScrollTo().performClick()
     }
 
+    private fun hasNode(text: String, substring: Boolean = false) =
+        compose.onAllNodes(hasText(text, substring = substring)).fetchSemanticsNodes().isNotEmpty()
+
+    private fun logout() {
+        compose.onNodeWithContentDescription("Más opciones").performClick()
+        compose.onNodeWithText("Cerrar sesión").performClick()
+        compose.waitForText("¡Bienvenido de nuevo!")
+    }
+
     @Test
-    fun registro_login_equipo_detalle_y_logout() {
+    fun registro_login_equipo_detalle_busqueda_y_logout() {
         val email = "ash${System.currentTimeMillis()}@test.com"
 
-        // Registro
+        // Registro: la casilla de privacidad es obligatoria
         compose.waitForText("Iniciar Sesión")
         compose.onNodeWithText("Regístrate").performClick()
         compose.waitForText("Registrarse")
@@ -108,16 +119,27 @@ class AppFlowEmulatorTest {
         type("Fecha de Nacimiento", "01/04/1997")
         type("Contraseña", "pikachu123")
         compose.onNodeWithText("Registrarse").performScrollTo().performClick()
+        compose.waitForText("Debes aceptar la Política de Privacidad")
+        compose.onNodeWithText("Al registrarte aceptas nuestra Política de Privacidad").performScrollTo().performClick()
+        compose.onNodeWithText("Registrarse").performScrollTo().performClick()
 
-        // Login
-        compose.waitForText("¡Bienvenido de nuevo!")
-        type("Email", email)
-        type("Contraseña", "pikachu123")
-        compose.onNodeWithText("Iniciar Sesión").performClick()
-
-        // HU-04: equipo vacio
+        // Tras registrarse se entra directamente al equipo vacio (HU-04)
         compose.waitForText("Añadir mi primer Pokémon")
         shot("01_lista_vacia")
+
+        // Login con contraseña incorrecta: mensaje en español
+        logout()
+        type("Email", email)
+        type("Contraseña", "incorrecta")
+        compose.onNodeWithText("Iniciar Sesión").performClick()
+        compose.waitForText("Email o contraseña incorrectos")
+        shot("02_login_error")
+
+        // Login correcto
+        compose.onNodeWithText("Contraseña").performTextClearance()
+        type("Contraseña", "pikachu123")
+        compose.onNodeWithText("Iniciar Sesión").performClick()
+        compose.waitForText("Añadir mi primer Pokémon")
 
         // HU-05: errores de validacion
         compose.onNodeWithText("Añadir mi primer Pokémon").performClick()
@@ -125,44 +147,52 @@ class AppFlowEmulatorTest {
         compose.onNodeWithText("Guardar Pokémon").performScrollTo().performClick()
         compose.waitForText("El nombre es obligatorio")
         compose.onNodeWithText("Nombre del Pokémon").performScrollTo()
-        shot("02_formulario_errores")
+        shot("03_formulario_errores")
 
         // HU-06: guardado confirmado -> vuelve a la lista
-        addPokemon("Pikachu", "5")
+        addPokemon("Pikachu", "5", notes = "Mi primer Pokémon")
         compose.waitForText("Nv. 5 · Eléctrico")
-        shot("03_lista_un_pokemon")
 
-        // Segundo Pikachu con distinto nivel
         compose.onNodeWithContentDescription("Añadir Pokémon").performClick()
         compose.waitForText("Guardar Pokémon")
         addPokemon("Pikachu", "50")
         compose.waitForText("Nv. 50 · Eléctrico")
-        shot("04_lista_dos_pikachu")
+        shot("04_lista_con_buscador")
 
-        // HU-07: cada Pikachu abre su propio detalle
+        // IRI-19: busqueda sin resultados y filtro por tipo
+        compose.onNodeWithText("Buscar en tu equipo").performTextInput("zzz")
+        compose.waitForText("No se encontraron Pokémon con esos filtros.")
+        shot("05_busqueda_sin_resultados")
+        compose.onNodeWithText("Limpiar filtros").performClick()
+        compose.waitForText("Nv. 50 · Eléctrico")
+        compose.onNodeWithText("Agua").performClick()
+        compose.waitForText("No se encontraron Pokémon con esos filtros.")
+        compose.onNodeWithContentDescription("Limpiar filtros").performClick()
+        compose.waitForText("Nv. 5 · Eléctrico")
+
+        // HU-07 + IRI-18 + IRI-22: cada Pikachu abre su propio detalle con tipos, stats y debilidades
         compose.onNodeWithText("Nv. 50 · Eléctrico").performClick()
-        compose.waitForText("Nv. 50 · Eléctrico", 15_000)
-        compose.waitUntil(15_000) { compose.onAllNodesWithText("Detalle Pokémon").fetchSemanticsNodes().isNotEmpty() }
-        shot("05_detalle_pikachu_nv50")
-        assertTrue(compose.onAllNodesWithText("Nv. 5 · Eléctrico").fetchSemanticsNodes().isEmpty())
+        compose.waitForText("Nivel 50")
+        assertTrue(hasNode("Tierra ×2"))
+        assertTrue(hasNode("Volador ×½"))
+        compose.waitForIdle()
+        shot("06_detalle_pikachu_nv50")
+        assertTrue(!hasNode("Nivel 5"))
         compose.onNodeWithContentDescription("Volver").performClick()
 
         compose.waitForText("Nv. 5 · Eléctrico")
         compose.onNodeWithText("Nv. 5 · Eléctrico").performClick()
-        compose.waitUntil(15_000) {
-            compose.onAllNodesWithText("Detalle Pokémon").fetchSemanticsNodes().isNotEmpty() &&
-                compose.onAllNodes(hasText("Nv. 5", substring = true)).fetchSemanticsNodes().isNotEmpty()
-        }
-        assertTrue(compose.onAllNodesWithText("Nv. 50 · Eléctrico").fetchSemanticsNodes().isEmpty())
-        shot("06_detalle_pikachu_nv5")
+        compose.waitForText("Nivel 5")
+        assertTrue(hasNode("Mi primer Pokémon"))
+        assertTrue(!hasNode("Nivel 50"))
+        compose.onNodeWithText("Debilidades y resistencias").performScrollTo()
+        shot("07_detalle_pikachu_nv5_debilidades")
         compose.onNodeWithContentDescription("Volver").performClick()
 
         // HU-02: logout real y la pila queda vacia
         compose.waitForText("Mi Equipo Pokémon")
-        compose.onNodeWithContentDescription("Más opciones").performClick()
-        compose.onNodeWithText("Cerrar sesión").performClick()
-        compose.waitForText("¡Bienvenido de nuevo!")
-        shot("07_login_tras_logout")
+        logout()
+        shot("08_login_tras_logout")
         assertNull(FirebaseAuth.getInstance().currentUser)
 
         compose.activityRule.scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }

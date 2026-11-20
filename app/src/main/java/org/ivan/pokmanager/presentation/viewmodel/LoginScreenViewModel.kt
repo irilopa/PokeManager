@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.ivan.pokmanager.domain.repository.AuthError
 import org.ivan.pokmanager.domain.repository.AuthRepository
 
 /**
@@ -59,7 +60,7 @@ class LoginScreenViewModel(
                     _message.value = "SUCCESS"
                 }
                 .onFailure {
-                    _message.value = it.message ?: "Error al iniciar sesión"
+                    _message.value = (it as? AuthError)?.message ?: "Error al iniciar sesión"
                 }
         }
     }

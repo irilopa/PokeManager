@@ -2,9 +2,12 @@ package org.ivan.pokmanager.viewmodel
 
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.ivan.pokmanager.MainDispatcherRule
 import org.ivan.pokmanager.domain.model.Pokemon
+import org.ivan.pokmanager.domain.type.PokemonType
 import org.ivan.pokmanager.domain.usecase.DeletePokemonUseCase
 import org.ivan.pokmanager.domain.usecase.GetPokemonUseCase
 import org.ivan.pokmanager.fakes.FakeAuthRepository
@@ -101,5 +104,44 @@ class PokemonListViewModelTest {
         vm.removePokemon(Pokemon(id = "a", name = "Pikachu"))
 
         assertEquals(UiState.Success(listOf(Pokemon(id = "b", name = "Eevee"))), vm.uiState.value)
+    }
+
+    @Test
+    fun `busqueda espera 300 ms y combina con el tipo`() = runTest {
+        val pikachu = Pokemon(id = "a", name = "Pikachu", types = "Eléctrico")
+        val raichu = Pokemon(id = "b", name = "Raichu", types = "Eléctrico")
+        val bulbasaur = Pokemon(id = "c", name = "Bulbasaur", types = "Planta / Veneno")
+        repo.seed("user-1", pikachu, raichu, bulbasaur)
+        val vm = createViewModel()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.visiblePokemons.collect {} }
+        assertEquals(listOf(pikachu, raichu, bulbasaur), vm.visiblePokemons.value)
+
+        vm.toggleTypeFilter(PokemonType.ELECTRIC)
+        assertEquals(listOf(pikachu, raichu), vm.visiblePokemons.value)
+
+        vm.setQuery("rai")
+        advanceTimeBy(299)
+        assertEquals("aun no se aplica la busqueda", listOf(pikachu, raichu), vm.visiblePokemons.value)
+        advanceTimeBy(2)
+        assertEquals(listOf(raichu), vm.visiblePokemons.value)
+
+        vm.toggleTypeFilter(PokemonType.ELECTRIC)
+        assertNull(vm.typeFilter.value)
+
+        vm.clearFilters()
+        advanceUntilIdle()
+        assertEquals(listOf(pikachu, raichu, bulbasaur), vm.visiblePokemons.value)
+    }
+
+    @Test
+    fun `filtros sin coincidencias dejan la lista visible vacia pero el equipo intacto`() = runTest {
+        repo.seed("user-1", Pokemon(id = "a", name = "Pikachu", types = "Eléctrico"))
+        val vm = createViewModel()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.visiblePokemons.collect {} }
+
+        vm.toggleTypeFilter(PokemonType.WATER)
+
+        assertTrue(vm.visiblePokemons.value.isEmpty())
+        assertEquals(1, (vm.uiState.value as UiState.Success).data.size)
     }
 }

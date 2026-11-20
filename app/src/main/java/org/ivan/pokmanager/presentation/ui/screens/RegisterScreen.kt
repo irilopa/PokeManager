@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -47,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -82,13 +84,15 @@ fun RegisterScreen(
     var showError by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
     var isPasswordVisible by remember { mutableStateOf(false) }
+    var acceptedPrivacy by remember { mutableStateOf(false) }
 
     val primaryColor = PokeColors.PokeRed
 
     LaunchedEffect(registerSuccess) {
         if (registerSuccess) {
-            navController.navigate(Screen.Login.route) {
-                popUpTo(Screen.Register.route) { inclusive = true }
+            // Firebase deja la sesion iniciada tras registrarse: se entra directamente al equipo.
+            navController.navigate(Screen.PokemonList.route) {
+                popUpTo(navController.graph.id) { inclusive = true }
             }
         }
     }
@@ -260,12 +264,21 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
             Row(
-                verticalAlignment = Alignment.CenterVertically
-
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .toggleable(
+                        value = acceptedPrivacy,
+                        role = Role.Checkbox,
+                        onValueChange = {
+                            acceptedPrivacy = it
+                            showError = false
+                        }
+                    )
             ) {
                 Checkbox(
-                    checked = false,
-                    onCheckedChange = {}
+                    checked = acceptedPrivacy,
+                    onCheckedChange = null
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
@@ -305,6 +318,12 @@ fun RegisterScreen(
                         password.length < 8 -> {
                             showError = true
                             errorMessage = "La contraseña debe tener al menos 8 caracteres"
+                            viewModel.clearMessage()
+                        }
+
+                        !acceptedPrivacy -> {
+                            showError = true
+                            errorMessage = "Debes aceptar la Política de Privacidad"
                             viewModel.clearMessage()
                         }
 

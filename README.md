@@ -27,7 +27,9 @@ PokéManager permite a cada usuario autenticado guardar y consultar su colecció
 - Registro e inicio de sesión con correo y contraseña mediante Firebase Authentication.
 - Consulta de Pokémon por nombre en PokéAPI para completar datos del formulario.
 - Almacenamiento y listado de Pokémon asociados al usuario en Cloud Firestore.
-- Visualización de detalles y eliminación de Pokémon de la colección.
+- Búsqueda por nombre y filtro por tipo en la colección.
+- Ficha de cada Pokémon con tipos, estadísticas base y debilidades, resistencias e inmunidades calculadas con la tabla de tipos.
+- Eliminación de Pokémon de la colección y sesión persistente: si ya has iniciado sesión, la app abre directamente tu equipo.
 
 ## 🧱 Arquitectura y stack tecnológico
 
