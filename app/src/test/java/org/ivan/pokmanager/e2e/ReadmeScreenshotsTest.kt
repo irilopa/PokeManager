@@ -1,6 +1,5 @@
 package org.ivan.pokmanager.e2e
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.os.Looper
@@ -17,14 +16,11 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
-import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.rules.ActivityScenarioRule
-import com.google.firebase.FirebaseApp
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import org.ivan.pokmanager.MainActivity
 import org.json.JSONArray
 import org.json.JSONObject
+import org.junit.After
 import org.junit.Assume.assumeTrue
 import org.junit.BeforeClass
 import org.junit.Rule
@@ -37,9 +33,9 @@ import org.robolectric.annotation.GraphicsMode
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.Proxy
-import java.net.Socket
 import java.net.URL
 import java.time.Duration
+import java.util.UUID
 
 /**
  * Genera las capturas del README con una coleccion de ejemplo sembrada en Firebase Emulator Suite.
@@ -58,25 +54,23 @@ class ReadmeScreenshotsTest {
 
     companion object {
         private const val PROJECT = "pokemanager-6113d"
-        private const val PASSWORD = "pikachu123"
+        /** Usuario de prueba que solo existe en el emulador: se genera en cada ejecucion. */
+        private val testPassword = "e2e-" + UUID.randomUUID()
 
-        private fun isUp(port: Int) = runCatching { Socket("127.0.0.1", port).close() }.isSuccess
 
         @BeforeClass
         @JvmStatic
         fun requireEmulators() {
-            assumeTrue("Firebase Emulator Suite no está arrancado", isUp(9099) && isUp(8080))
+            assumeTrue("Firebase Emulator Suite no está arrancado", FirebaseEmulators.areRunning())
         }
     }
 
     @get:Rule
     val compose: AndroidComposeTestRule<ActivityScenarioRule<MainActivity>, MainActivity> =
-        createAndroidComposeRule<MainActivity>().also {
-            val context = ApplicationProvider.getApplicationContext<Context>()
-            if (FirebaseApp.getApps(context).isEmpty()) FirebaseApp.initializeApp(context)
-            FirebaseAuth.getInstance().useEmulator("127.0.0.1", 9099)
-            FirebaseFirestore.getInstance().useEmulator("127.0.0.1", 8080)
-        }
+        createAndroidComposeRule<MainActivity>().also { FirebaseEmulators.configure() }
+
+    @After
+    fun tearDown() = FirebaseEmulators.reset()
 
     private val shotsDir = File(System.getProperty("user.dir"), "build/readme-screenshots").apply { mkdirs() }
 
@@ -111,7 +105,7 @@ class ReadmeScreenshotsTest {
         val uid = http(
             "POST",
             "http://127.0.0.1:9099/identitytoolkit.googleapis.com/v1/accounts:signUp?key=fake",
-            JSONObject().put("email", email).put("password", PASSWORD).put("returnSecureToken", true)
+            JSONObject().put("email", email).put("password", testPassword).put("returnSecureToken", true)
         ).getString("localId")
 
         fun int(v: Int) = JSONObject().put("integerValue", v.toString())
@@ -169,7 +163,7 @@ class ReadmeScreenshotsTest {
         waitForText("Iniciar Sesión")
         compose.onNodeWithText("Email").performTextInput(email)
         shot("01_login")
-        compose.onNodeWithText("Contraseña").performTextInput(PASSWORD)
+        compose.onNodeWithText("Contraseña").performTextInput(testPassword)
         compose.onNodeWithText("Iniciar Sesión").performClick()
 
         waitForText("Nv. 25 · Eléctrico")

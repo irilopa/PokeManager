@@ -1,170 +1,215 @@
+<div align="center">
+
+<img src="docs/logo.png" alt="Logo de PokéManager" width="96">
+
 # PokéManager
 
-Aplicación Android para gestionar una colección personal de Pokémon y consultar sus datos en PokéAPI.
+**Gestiona tu colección de Pokémon desde Android: regístralos, consulta su ficha y conoce sus debilidades.**
 
-![Kotlin](https://img.shields.io/badge/Kotlin-2.0.21-7F52FF?logo=kotlin&logoColor=white)
-![Android](https://img.shields.io/badge/Android-API%2026%2B-3DDC84?logo=android&logoColor=white)
-![Jetpack Compose](https://img.shields.io/badge/UI-Jetpack%20Compose-4285F4?logo=jetpackcompose&logoColor=white)
-![Versión](https://img.shields.io/badge/versi%C3%B3n-1.0-blue)
-![Licencia](https://img.shields.io/badge/licencia-MIT-green)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.0.21-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org/)
+[![Android](https://img.shields.io/badge/Android-API%2026%2B-3DDC84?logo=android&logoColor=white)](https://developer.android.com/)
+[![Jetpack Compose](https://img.shields.io/badge/UI-Jetpack%20Compose-4285F4?logo=jetpackcompose&logoColor=white)](https://developer.android.com/compose)
+[![Firebase](https://img.shields.io/badge/Backend-Firebase-FFCA28?logo=firebase&logoColor=black)](https://firebase.google.com/)
+[![Licencia: MIT](https://img.shields.io/badge/licencia-MIT-green.svg)](LICENSE)
 
-## 📑 Contenido
+<img src="docs/screenshots/coleccion.png" alt="Colección del usuario" width="220">
+<img src="docs/screenshots/detalle.png" alt="Detalle de un Pokémon" width="220">
+<img src="docs/screenshots/debilidades.png" alt="Debilidades y resistencias" width="220">
 
-- [Sobre el proyecto](#-sobre-el-proyecto)
-- [Arquitectura y stack tecnológico](#-arquitectura-y-stack-tecnológico)
-- [Capturas de pantalla y demo](#-capturas-de-pantalla-y-demo)
-- [Requisitos previos](#-requisitos-previos)
-- [Instalación y despliegue local](#-instalación-y-despliegue-local)
-- [Variables de entorno](#-variables-de-entorno)
-- [Estructura del proyecto](#-estructura-del-proyecto)
-- [Uso y API](#-uso-y-api)
-- [Licencia y contacto](#-licencia-y-contacto)
+</div>
 
-## 🎯 Sobre el proyecto
+## Contenido
 
-PokéManager permite a cada usuario autenticado guardar y consultar su colección de Pokémon desde Android.
+- [Funcionalidades](#funcionalidades)
+- [Capturas](#capturas)
+- [Stack tecnológico](#stack-tecnológico)
+- [Arquitectura](#arquitectura)
+- [Puesta en marcha](#puesta-en-marcha)
+- [Pruebas](#pruebas)
+- [Datos y seguridad](#datos-y-seguridad)
+- [Estructura del proyecto](#estructura-del-proyecto)
+- [Hoja de ruta](#hoja-de-ruta)
+- [Contribuir](#contribuir)
+- [Licencia](#licencia)
+- [Aviso legal](#aviso-legal)
 
-- Registro e inicio de sesión con correo y contraseña mediante Firebase Authentication.
-- Consulta de Pokémon por nombre en PokéAPI para completar datos del formulario.
-- Almacenamiento y listado de Pokémon asociados al usuario en Cloud Firestore.
-- Búsqueda por nombre y filtro por tipo en la colección.
-- Ficha de cada Pokémon con tipos, estadísticas base y debilidades, resistencias e inmunidades calculadas con la tabla de tipos.
-- Eliminación de Pokémon de la colección y sesión persistente: si ya has iniciado sesión, la app abre directamente tu equipo.
+## Funcionalidades
 
-## 🧱 Arquitectura y stack tecnológico
+- **Cuenta propia**: registro e inicio de sesión con email y contraseña (Firebase Authentication). La sesión se mantiene entre aperturas y los errores se muestran en español.
+- **Colección personal**: cada usuario guarda sus Pokémon en Cloud Firestore, sincronizados en tiempo real.
+- **Alta asistida**: al escribir el nombre, la app consulta la [PokéAPI](https://pokeapi.co/) y rellena número, tipos y estadísticas. El formulario valida nombre, nivel (1–100), tipos y longitud de las notas.
+- **Búsqueda y filtros**: búsqueda por nombre (sin distinguir mayúsculas ni tildes) combinable con un filtro por cualquiera de los 18 tipos.
+- **Ficha detallada**: imagen oficial, tipos, nivel, notas del entrenador, estadísticas base con barras y total.
+- **Debilidades y resistencias**: calculadas con la tabla de tipos (Gen 6+), incluidos los Pokémon de doble tipo (×4, ×2, ×½, ×¼ e inmunidades).
+- **Estados claros**: indicadores de carga, mensajes de error con «Reintentar», pantalla de bienvenida cuando la colección está vacía y confirmación al guardar.
 
-La aplicación utiliza MVVM y organiza el código en capas de presentación, dominio y datos, con casos de uso y repositorios.
+## Capturas
+
+| Inicio de sesión | Colección | Filtro por tipo |
+| :---: | :---: | :---: |
+| <img src="docs/screenshots/login.png" alt="Pantalla de inicio de sesión" width="230"> | <img src="docs/screenshots/coleccion.png" alt="Colección con buscador y filtros por tipo" width="230"> | <img src="docs/screenshots/filtro-tipo.png" alt="Colección filtrada por el tipo Volador" width="230"> |
+
+| Búsqueda | Detalle | Debilidades |
+| :---: | :---: | :---: |
+| <img src="docs/screenshots/busqueda.png" alt="Búsqueda por nombre en la colección" width="230"> | <img src="docs/screenshots/detalle.png" alt="Detalle de Charizard con tipos y estadísticas" width="230"> | <img src="docs/screenshots/debilidades.png" alt="Debilidades, resistencias e inmunidades de Charizard" width="230"> |
+
+<details>
+<summary><strong>Ver demo animada</strong></summary>
+<br>
+<div align="center">
+<img src="docs/screenshots/demo.gif" alt="Recorrido por la app: login, colección, filtro, detalle, debilidades y búsqueda" width="300">
+</div>
+</details>
+
+## Stack tecnológico
 
 | Área | Tecnología |
 | --- | --- |
-| Aplicación móvil | Kotlin 2.0.21, Jetpack Compose, Material 3 y Navigation Compose |
-| Estado y concurrencia | ViewModel, Kotlin Coroutines y Flow |
-| Autenticación | Firebase Authentication |
-| Base de datos | Cloud Firestore |
-| API externa | PokéAPI, Retrofit, OkHttp y Gson |
+| Lenguaje y UI | Kotlin 2.0.21, Jetpack Compose, Material 3, Navigation Compose |
+| Estado y concurrencia | ViewModel, Kotlin Coroutines, `StateFlow` |
+| Backend | Firebase Authentication, Cloud Firestore |
+| API externa | PokéAPI con Retrofit, OkHttp y Gson |
 | Imágenes | Coil |
 | Inyección de dependencias | Koin |
-| Compilación | Android Gradle Plugin 8.13.2 y Gradle Wrapper 8.13 |
-| Infraestructura | Servicios gestionados de Firebase; no hay servidor propio en el repositorio |
+| Pruebas | JUnit 4, kotlinx-coroutines-test, Robolectric, Compose UI Test, Firebase Emulator Suite |
+| Compilación | Android Gradle Plugin 8.13.2, Gradle 8.13, `minSdk` 26, `targetSdk` 36 |
 
-## 🖼️ Capturas de pantalla y demo
+## Arquitectura
 
-| Inicio de sesión | Colección | Detalle |
-| --- | --- | --- |
-| <img src="docs/screenshots/login.png" alt="Pantalla de inicio de sesión" width="240"> | <img src="docs/screenshots/coleccion.png" alt="Colección del usuario con buscador y filtros por tipo" width="240"> | <img src="docs/screenshots/detalle.png" alt="Detalle de Charizard con tipos y estadísticas base" width="240"> |
+La app sigue **MVVM** con una separación en capas inspirada en Clean Architecture:
 
-| Filtro por tipo | Búsqueda por nombre | Debilidades y resistencias |
-| --- | --- | --- |
-| <img src="docs/screenshots/filtro-tipo.png" alt="Colección filtrada por el tipo Volador" width="240"> | <img src="docs/screenshots/busqueda.png" alt="Búsqueda «ga» en la colección" width="240"> | <img src="docs/screenshots/debilidades.png" alt="Debilidades, resistencias e inmunidades de Charizard" width="240"> |
-
-**Demo:**
-
-<img src="docs/screenshots/demo.gif" alt="Recorrido por la app: login, colección, filtro, detalle, debilidades y búsqueda" width="300">
-
-Las capturas se generan con `ReadmeScreenshotsTest`, que siembra una colección de ejemplo en Firebase Emulator Suite y recorre la app con Robolectric:
-
-```bash
-firebase emulators:exec --only auth,firestore --project pokemanager-6113d "./gradlew testDebugUnitTest --tests '*ReadmeScreenshotsTest*'"
+```text
+presentation  →  pantallas Compose + ViewModels (UiState / SaveState)
+     │
+domain        →  modelos, interfaces de repositorio, casos de uso,
+     │           validación del formulario, tabla de tipos y filtros
+     │
+data          →  implementaciones con Firebase (Auth, Firestore) y PokéAPI (Retrofit)
 ```
 
-Las imágenes quedan en `app/build/readme-screenshots/`.
+- La capa de dominio no depende de Firebase: `AuthRepository` y `PokemonRepository` son interfaces, lo que permite probar los ViewModels con repositorios en memoria.
+- Las pantallas exponen estados explícitos (`Loading`, `Success`, `Error`) y nunca muestran «no encontrado» mientras cargan.
+- La lógica sin dependencias de Android (`PokemonFormValidator`, `TypeChart`, `PokemonFilter`) es pura y está cubierta por tests unitarios.
 
-## ✅ Requisitos previos
+## Puesta en marcha
 
-- Android Studio compatible con Android Gradle Plugin 8.13.2.
-- JDK 17 para ejecutar Gradle; el proyecto compila con compatibilidad de Java 11.
-- Android SDK 36 y un emulador o dispositivo con Android 8.0 (API 26) o superior.
-- Un proyecto de Firebase con Authentication y Cloud Firestore configurados.
-- Conexión a Internet para resolver dependencias y acceder a Firebase y PokéAPI.
+### Requisitos
 
-El repositorio incluye Gradle Wrapper 8.13; no es necesario instalar Gradle por separado.
+- Android Studio con soporte para AGP 8.13 y **JDK 17**.
+- Android SDK 36 y un dispositivo o emulador con **Android 8.0 (API 26)** o superior.
+- Un proyecto de [Firebase](https://console.firebase.google.com/) con Authentication y Cloud Firestore.
+- Opcional, para las pruebas E2E: [Firebase CLI](https://firebase.google.com/docs/cli).
 
-## 🚀 Instalación y despliegue local
+### Instalación
 
-1. Clona el repositorio y accede al directorio:
+1. Clona el repositorio:
 
    ```bash
    git clone https://github.com/irilopa/PokeManager.git
-   cd PokeManager
    ```
 
-2. Abre el proyecto en Android Studio, configura el JDK 17 y el SDK de Android 36 y sincroniza Gradle.
+2. En Firebase Console, registra una app Android con el paquete `org.ivan.pokmanager`, descarga `google-services.json` y colócalo en `app/google-services.json` (sustituye el existente si usas tu propio proyecto).
 
-3. En Firebase Console, registra una aplicación Android con el identificador `org.ivan.pokmanager`. Descarga el archivo `google-services.json` de tu proyecto y colócalo en `app/google-services.json`. El repositorio ya contiene un archivo en esa ruta; sustitúyelo si utilizas otro proyecto de Firebase.
+3. Activa el proveedor **Correo electrónico/contraseña** en Authentication y crea una base de datos en Cloud Firestore.
 
-4. Activa el proveedor **Correo electrónico/contraseña** en Firebase Authentication y crea una base de datos Cloud Firestore. Configura reglas de seguridad que permitan a cada usuario autenticado acceder únicamente a sus propios datos, incluidos los documentos de `users/{uid}/pokemon`.
+4. Publica las reglas de seguridad incluidas en el repositorio:
 
-5. Selecciona un emulador o dispositivo conectado y ejecuta la aplicación desde Android Studio. También puedes generar el APK de depuración desde la raíz:
+   ```bash
+   firebase deploy --only firestore:rules --project <tu-proyecto>
+   ```
+
+5. Abre el proyecto en Android Studio, sincroniza Gradle y ejecuta la configuración `app`. Para compilar desde terminal:
 
    ```bash
    ./gradlew assembleDebug
    ```
 
-### Pruebas
+La app no necesita variables de entorno ni claves adicionales: Firebase se configura con `google-services.json` y la PokéAPI es pública.
 
-Pruebas unitarias (repositorios falsos en memoria, sin red):
+## Pruebas
+
+| Tipo | Qué cubre | Comando |
+| --- | --- | --- |
+| Unitarias | Validación, tabla de tipos, filtros y ViewModels con repositorios falsos | `./gradlew testDebugUnitTest` |
+| Extremo a extremo | Registro, login, colección, búsqueda, detalle y cierre de sesión con el SDK real de Firebase | ver abajo |
+| Capturas del README | Genera las imágenes de `docs/screenshots/` con una colección de ejemplo | ver abajo |
+
+Las pruebas E2E y de capturas usan Robolectric contra **Firebase Emulator Suite**, sin tocar ningún proyecto real. Si los emuladores no están arrancados, se omiten y la suite unitaria sigue en verde.
 
 ```bash
-./gradlew testDebugUnitTest
+firebase emulators:exec --only auth,firestore --project pokemanager-6113d \
+  "./gradlew testDebugUnitTest --tests '*AppFlowEmulatorTest*'"
 ```
-
-Prueba de extremo a extremo: recorre la app completa con Robolectric (registro, login, equipo vacío, validación, guardado, detalle y cierre de sesión) contra Firebase Emulator Suite, sin tocar el proyecto real. Requiere [Firebase CLI](https://firebase.google.com/docs/cli) y deja capturas en `app/build/e2e-screenshots/`. Sin los emuladores arrancados, esta prueba se omite.
 
 ```bash
-firebase emulators:exec --only auth,firestore --project pokemanager-6113d "./gradlew testDebugUnitTest --tests '*AppFlowEmulatorTest*'"
+firebase emulators:exec --only auth,firestore --project pokemanager-6113d \
+  "./gradlew testDebugUnitTest --tests '*ReadmeScreenshotsTest*'"
 ```
 
-Las reglas de seguridad de Firestore están en `firestore.rules`.
+Las capturas se guardan en `app/build/e2e-screenshots/` y `app/build/readme-screenshots/`.
 
-## 🔧 Variables de entorno
+## Datos y seguridad
 
-El código de la aplicación no define variables de entorno propias para Firebase ni para PokéAPI. Firebase se configura mediante `app/google-services.json`; la URL base de PokéAPI está definida en el código. No se requiere un archivo `.env`.
+Los datos de cada usuario viven bajo su `uid`:
 
-## 📁 Estructura del proyecto
+```text
+users/{uid}                    perfil: nombre, email, fecha de nacimiento
+users/{uid}/pokemon/{docId}    Pokémon: nombre, nº de Pokédex, tipos, nivel,
+                               notas, estadísticas base e imagen
+```
+
+Las reglas de [`firestore.rules`](firestore.rules) solo permiten leer y escribir estos documentos al usuario autenticado propietario; cualquier otro acceso se deniega.
+
+## Estructura del proyecto
 
 ```text
 .
 ├── app/
-│   ├── build.gradle.kts              # Configuración del módulo Android
-│   ├── google-services.json          # Configuración de Firebase
 │   └── src/
-│       ├── main/
-│       │   ├── AndroidManifest.xml   # Permisos y componentes Android
-│       │   ├── java/org/ivan/pokmanager/
-│       │   │   ├── data/             # DTO, PokéAPI y repositorios de Firebase
-│       │   │   ├── di/               # Módulos de inyección de dependencias
-│       │   │   ├── domain/           # Modelos, interfaces, casos de uso, validación y tabla de tipos
-│       │   │   └── presentation/     # Pantallas, navegación y ViewModels
-│       │   └── res/                  # Recursos Android
-│       ├── test/                     # Pruebas unitarias y E2E con Firebase Emulator
-│       └── androidTest/              # Pruebas instrumentadas
-├── docs/screenshots/                 # Capturas del README
-├── gradle/                           # Catálogo de versiones y wrapper
-├── build.gradle.kts                  # Plugins del proyecto
-├── firebase.json                     # Configuración de Firebase CLI y emuladores
-├── firestore.rules                   # Reglas de seguridad de Firestore
-├── gradle.properties                 # Propiedades de Gradle
-├── gradlew                           # Gradle Wrapper para Unix
-├── gradlew.bat                       # Gradle Wrapper para Windows
-└── settings.gradle.kts               # Repositorios y módulos
+│       ├── main/java/org/ivan/pokmanager/
+│       │   ├── data/          # Firebase (Auth, Firestore), PokéAPI y DTO
+│       │   ├── di/            # Módulos de Koin
+│       │   ├── domain/        # Modelos, repositorios, casos de uso, validación, tipos y filtros
+│       │   └── presentation/  # Navegación, pantallas, componentes, tema y ViewModels
+│       └── test/              # Tests unitarios, E2E y generación de capturas
+├── docs/                      # Logo, capturas y demo del README
+├── firebase.json              # Configuración de Firebase CLI y emuladores
+├── firestore.rules            # Reglas de seguridad de Firestore
+├── gradle/libs.versions.toml  # Catálogo de versiones
+└── LICENSE
 ```
 
-## 📖 Uso y API
+## Hoja de ruta
 
-1. Registra una cuenta o inicia sesión.
-2. En la pantalla de la colección, añade un Pokémon. Puedes consultar su nombre en PokéAPI para completar los datos disponibles.
-3. Selecciona un Pokémon para ver su detalle o utiliza el botón de eliminación para retirarlo de la colección.
+- [x] Autenticación con sesión persistente
+- [x] Colección por usuario con validación y guardado confirmado
+- [x] Ficha con estadísticas, tipos y debilidades
+- [x] Búsqueda y filtro por tipo
+- [ ] Explorar el Pokédex completo y añadir desde ahí
+- [ ] Equipos de combate de hasta 6 Pokémon
+- [ ] Tabla de tipos completa (18×18)
+- [ ] Comparador de dos Pokémon
+- [ ] Splash screen y onboarding
+- [ ] Aviso de modo sin conexión
 
-La aplicación consume el endpoint público de PokéAPI `GET https://pokeapi.co/api/v2/pokemon/{name}`; también admite un identificador numérico. Ejemplo:
+## Contribuir
 
-```bash
-curl https://pokeapi.co/api/v2/pokemon/pikachu
-```
+Las contribuciones son bienvenidas:
 
-Documentación externa: [PokéAPI](https://pokeapi.co/docs/v2).
+1. Haz un fork y crea una rama desde `master` (`git checkout -b feature/mi-mejora`).
+2. Añade o actualiza los tests correspondientes y comprueba que `./gradlew testDebugUnitTest` pasa.
+3. Abre un pull request describiendo el cambio y, si afecta a la interfaz, incluye capturas.
 
-## ⚖️ Licencia y contacto
+Para errores o propuestas, abre un [issue](https://github.com/irilopa/PokeManager/issues).
 
-La documentación anterior declaraba la licencia MIT, pero el repositorio no incluye un archivo `LICENSE` con su texto. [COMPLETAR: añadir o confirmar el archivo de licencia].
+## Licencia
 
-Contacto: [irilopa en GitHub](https://github.com/irilopa) · [Repositorio](https://github.com/irilopa/PokeManager)
+Distribuido bajo la licencia **MIT**. Consulta el archivo [LICENSE](LICENSE) para más información.
+
+La licencia cubre únicamente el código fuente de este repositorio; no se aplica a las marcas, nombres ni imágenes de Pokémon mencionados en el aviso legal.
+
+## Aviso legal
+
+PokéManager es un proyecto personal, educativo y sin ánimo de lucro. No es un producto oficial ni está afiliado, patrocinado ni respaldado por Nintendo, The Pokémon Company, Creatures Inc. ni GAME FREAK inc.
+
+Pokémon y los nombres de los Pokémon son marcas registradas de Nintendo y sus filiales. Las imágenes y los datos de los Pokémon se obtienen de [PokéAPI](https://pokeapi.co/) y pertenecen a sus respectivos titulares: © Nintendo, Creatures Inc. y GAME FREAK inc.

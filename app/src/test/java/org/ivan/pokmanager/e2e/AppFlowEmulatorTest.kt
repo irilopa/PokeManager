@@ -1,6 +1,5 @@
 package org.ivan.pokmanager.e2e
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -16,13 +15,11 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.rules.ActivityScenarioRule
-import androidx.test.core.app.ApplicationProvider
-import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import org.ivan.pokmanager.MainActivity
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.After
 import org.junit.Assume.assumeTrue
 import org.junit.BeforeClass
 import org.junit.Rule
@@ -32,7 +29,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import java.io.File
-import java.net.Socket
+import java.util.UUID
 
 /**
  * Recorre la app completa (Koin + SDK real de Firebase) contra Firebase Emulator Suite.
@@ -48,25 +45,20 @@ import java.net.Socket
 class AppFlowEmulatorTest {
 
     companion object {
-        private fun isUp(port: Int) = runCatching { Socket("127.0.0.1", port).close() }.isSuccess
 
         @BeforeClass
         @JvmStatic
         fun requireEmulators() {
-            assumeTrue("Firebase Emulator Suite no está arrancado", isUp(9099) && isUp(8080))
+            assumeTrue("Firebase Emulator Suite no está arrancado", FirebaseEmulators.areRunning())
         }
     }
 
     @get:Rule
     val compose: AndroidComposeTestRule<ActivityScenarioRule<MainActivity>, MainActivity> =
-        createAndroidComposeRule<MainActivity>().also {
-            // Robolectric no ejecuta FirebaseInitProvider: se inicializa a mano con google-services.json.
-            val context = ApplicationProvider.getApplicationContext<Context>()
-            if (FirebaseApp.getApps(context).isEmpty()) FirebaseApp.initializeApp(context)
-            // Debe hacerse antes de que Koin cree los singletons de Firebase.
-            FirebaseAuth.getInstance().useEmulator("127.0.0.1", 9099)
-            FirebaseFirestore.getInstance().useEmulator("127.0.0.1", 8080)
-        }
+        createAndroidComposeRule<MainActivity>().also { FirebaseEmulators.configure() }
+
+    @After
+    fun tearDown() = FirebaseEmulators.reset()
 
     private val shotsDir = File(System.getProperty("user.dir"), "build/e2e-screenshots").apply { mkdirs() }
 
@@ -109,6 +101,8 @@ class AppFlowEmulatorTest {
     @Test
     fun registro_login_equipo_detalle_busqueda_y_logout() {
         val email = "ash${System.currentTimeMillis()}@test.com"
+        // Usuario de prueba que solo existe en el emulador: se genera en cada ejecucion.
+        val testPassword = "e2e-" + UUID.randomUUID()
 
         // Registro: la casilla de privacidad es obligatoria
         compose.waitForText("Iniciar Sesión")
@@ -117,7 +111,7 @@ class AppFlowEmulatorTest {
         type("Nombre", "Ash")
         type("Email", email)
         type("Fecha de Nacimiento", "01/04/1997")
-        type("Contraseña", "pikachu123")
+        type("Contraseña", testPassword)
         compose.onNodeWithText("Registrarse").performScrollTo().performClick()
         compose.waitForText("Debes aceptar la Política de Privacidad")
         compose.onNodeWithText("Al registrarte aceptas nuestra Política de Privacidad").performScrollTo().performClick()
@@ -137,7 +131,7 @@ class AppFlowEmulatorTest {
 
         // Login correcto
         compose.onNodeWithText("Contraseña").performTextClearance()
-        type("Contraseña", "pikachu123")
+        type("Contraseña", testPassword)
         compose.onNodeWithText("Iniciar Sesión").performClick()
         compose.waitForText("Añadir mi primer Pokémon")
 
