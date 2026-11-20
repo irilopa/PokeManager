@@ -65,13 +65,13 @@ class RegisterScreenViewModel(
             val authResult = authRepository.register(currentEmail, currentPassword)
 
             authResult
-                .onSuccess { firebaseUser ->
+                .onSuccess { uid ->
                     val userDto = UserDto(
                         name = currentName,
                         email = currentEmail,
                         birthDay = currentBirthdate
                     )
-                    runCatching { userRepository.saveUserData(firebaseUser.uid, userDto) }
+                    runCatching { userRepository.saveUserData(uid, userDto) }
                         .onFailure {
                             _message.value = "Cuenta creada, pero no se pudieron guardar los datos de perfil."
                         }

@@ -10,6 +10,7 @@ data class Pokemon(
     val pokedexNumber: Int = 0,
     val name: String = "",
     val types: String = "",
+    val level: Int = 0,
     val description: String = "",
     val heightM: Double = 0.0,
     val weightKg: Double = 0.0,

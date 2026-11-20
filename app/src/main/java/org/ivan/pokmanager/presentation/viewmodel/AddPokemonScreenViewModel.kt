@@ -2,50 +2,54 @@ package org.ivan.pokmanager.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import org.ivan.pokmanager.data.model.remote.dto.toSpanish
 import org.ivan.pokmanager.data.model.remote.dto.toPokemonStats
+import org.ivan.pokmanager.data.model.remote.dto.toSpanish
 import org.ivan.pokmanager.data.model.repository.PokemonApiService
 import org.ivan.pokmanager.domain.model.Pokemon
 import org.ivan.pokmanager.domain.model.PokemonStats
+import org.ivan.pokmanager.domain.repository.AuthRepository
 import org.ivan.pokmanager.domain.usecase.SavePokemonUseCase
+import org.ivan.pokmanager.domain.validation.PokemonField
+import org.ivan.pokmanager.domain.validation.PokemonForm
+import org.ivan.pokmanager.domain.validation.PokemonFormValidator
+import org.ivan.pokmanager.presentation.state.SaveState
 
 /**
- * Administra el formulario de alta de Pokemon y la consulta a la PokeAPI.
+ * Administra el formulario de alta de Pokemon, su validacion, el guardado y la consulta a la PokeAPI.
  */
 class AddPokemonScreenViewModel(
     private val savePokemonUseCase: SavePokemonUseCase,
     private val pokemonApiService: PokemonApiService,
-    private val firebaseAuth: FirebaseAuth
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
-    private val _name = MutableStateFlow("")
-    private val _pokedexNumber = MutableStateFlow("")
-    private val _primaryType = MutableStateFlow("")
-    private val _secondaryType = MutableStateFlow("")
-    private val _level = MutableStateFlow("")
+    private val _form = MutableStateFlow(PokemonForm())
     private val _hp = MutableStateFlow("")
     private val _attack = MutableStateFlow("")
-    private val _notes = MutableStateFlow("")
+    private val _errors = MutableStateFlow<Map<PokemonField, String>>(emptyMap())
+    private val _saveState = MutableStateFlow<SaveState>(SaveState.Idle)
 
     private val _isLoadingFromApi = MutableStateFlow(false)
     private val _apiError = MutableStateFlow<String?>(null)
     private val _apiSuccess = MutableStateFlow(false)
 
-    val name = _name.asStateFlow()
-    val pokedexNumber = _pokedexNumber.asStateFlow()
-    val primaryType = _primaryType.asStateFlow()
-    val secondaryType = _secondaryType.asStateFlow()
-    val level = _level.asStateFlow()
-    val hp = _hp.asStateFlow()
-    val attack = _attack.asStateFlow()
-    val notes = _notes.asStateFlow()
-    val isLoadingFromApi = _isLoadingFromApi.asStateFlow()
-    val apiError = _apiError.asStateFlow()
-    val apiSuccess = _apiSuccess.asStateFlow()
+    /** Stats completas obtenidas de la PokeAPI para el nombre actual. */
+    private var fetchedStats: PokemonStats? = null
+
+    val form: StateFlow<PokemonForm> = _form.asStateFlow()
+    val hp: StateFlow<String> = _hp.asStateFlow()
+    val attack: StateFlow<String> = _attack.asStateFlow()
+    /** Errores de validacion por campo. */
+    val errors: StateFlow<Map<PokemonField, String>> = _errors.asStateFlow()
+    /** Estado del guardado. */
+    val saveState: StateFlow<SaveState> = _saveState.asStateFlow()
+    val isLoadingFromApi: StateFlow<Boolean> = _isLoadingFromApi.asStateFlow()
+    val apiError: StateFlow<String?> = _apiError.asStateFlow()
+    val apiSuccess: StateFlow<Boolean> = _apiSuccess.asStateFlow()
 
     /** Lista de tipos disponibles para la UI. */
     val pokemonTypes: List<String> = listOf(
@@ -55,31 +59,28 @@ class AddPokemonScreenViewModel(
     )
 
     fun setName(value: String) {
-        _name.value = value
+        if (value != _form.value.name) fetchedStats = null
+        updateForm(PokemonField.NAME) { it.copy(name = value) }
     }
 
     fun setPokedexNumber(value: String) {
-        if (value.all { it.isDigit() }) _pokedexNumber.value = value
+        if (value.all { it.isDigit() }) {
+            updateForm(PokemonField.POKEDEX_NUMBER) { it.copy(pokedexNumber = value) }
+        }
     }
 
     fun setPrimaryType(value: String) {
-        _primaryType.value = value
+        updateForm(PokemonField.PRIMARY_TYPE, PokemonField.SECONDARY_TYPE) { it.copy(primaryType = value) }
     }
 
     fun setSecondaryType(value: String) {
-        _secondaryType.value = value
-    }
-
-    fun setPrimaryTypeSelected(value: String) {
-        setPrimaryType(value)
-    }
-
-    fun setSecondaryTypeSelected(value: String) {
-        setSecondaryType(value)
+        updateForm(PokemonField.SECONDARY_TYPE) { it.copy(secondaryType = value) }
     }
 
     fun setLevel(value: String) {
-        if (value.all { it.isDigit() }) _level.value = value
+        if (value.all { it.isDigit() }) {
+            updateForm(PokemonField.LEVEL) { it.copy(level = value) }
+        }
     }
 
     fun setHp(value: String) {
@@ -91,12 +92,19 @@ class AddPokemonScreenViewModel(
     }
 
     fun setNotes(value: String) {
-        _notes.value = value
+        updateForm(PokemonField.NOTES) { it.copy(notes = value) }
+    }
+
+    /** Actualiza el formulario y borra el error de los campos tocados. */
+    private fun updateForm(vararg fields: PokemonField, transform: (PokemonForm) -> PokemonForm) {
+        _form.value = transform(_form.value)
+        if (fields.any { it in _errors.value }) _errors.value = _errors.value - fields.toSet()
+        if (_saveState.value is SaveState.Error) _saveState.value = SaveState.Idle
     }
 
     /** Busca el Pokemon por nombre en la PokeAPI y autocompleta los campos principales. */
     fun fetchPokemonFromApi() {
-        val query = _name.value.trim().lowercase()
+        val query = _form.value.name.trim().lowercase()
         if (query.isBlank()) return
 
         _isLoadingFromApi.value = true
@@ -106,20 +114,22 @@ class AddPokemonScreenViewModel(
         viewModelScope.launch {
             runCatching { pokemonApiService.getPokemonByName(query) }
                 .onSuccess { response ->
-                    _pokedexNumber.value = response.id.toString()
-
-                    if (_name.value.isBlank()) _name.value = response.name
-
                     val stats = response.toPokemonStats()
+                    fetchedStats = stats
                     _hp.value = stats.hp.toString()
                     _attack.value = stats.attack.toString()
 
                     val typeNames = response.types
                         .sortedBy { it.slot }
                         .map { it.type.toSpanish() }
-                    _primaryType.value = typeNames.getOrElse(0) { "" }
-                    _secondaryType.value = typeNames.getOrElse(1) { "" }
-
+                    _form.value = _form.value.copy(
+                        pokedexNumber = response.id.toString(),
+                        primaryType = typeNames.getOrElse(0) { "" },
+                        secondaryType = typeNames.getOrElse(1) { "" }
+                    )
+                    _errors.value = _errors.value - setOf(
+                        PokemonField.POKEDEX_NUMBER, PokemonField.PRIMARY_TYPE, PokemonField.SECONDARY_TYPE
+                    )
                     _apiSuccess.value = true
                 }
                 .onFailure {
@@ -139,57 +149,62 @@ class AddPokemonScreenViewModel(
     }
 
     /**
-     * Guarda el Pokemon en Firestore e intenta obtener stats desde la PokeAPI si es posible.
+     * Valida el formulario y guarda el Pokemon. Ignora pulsaciones mientras ya se esta guardando
+     * o tras un guardado correcto, para no crear duplicados.
      */
     fun savePokemon() {
-        val uid = firebaseAuth.currentUser?.uid ?: return
-        val pokedexNumberInt = _pokedexNumber.value.toIntOrNull()
-        val resolvedPokedexNumber = pokedexNumberInt ?: (System.currentTimeMillis() / 1000).toInt()
+        val current = _saveState.value
+        if (current is SaveState.Saving || current is SaveState.Success) return
+
+        val form = _form.value
+        val validationErrors = PokemonFormValidator.validate(form)
+        _errors.value = validationErrors
+        if (validationErrors.isNotEmpty()) return
+
+        val uid = authRepository.currentUserId()
+        if (uid == null) {
+            _saveState.value = SaveState.Error(PokemonListViewModel.NO_SESSION_MESSAGE)
+            return
+        }
+
+        _saveState.value = SaveState.Saving
+
+        val pokedexNumber = form.pokedexNumber.trim().toIntOrNull() ?: 0
+        val hp = _hp.value.toIntOrNull() ?: DEFAULT_HP
+        val attack = _attack.value.toIntOrNull() ?: DEFAULT_ATTACK
+        val stats = fetchedStats?.copy(hp = hp, attack = attack)
+            ?: PokemonStats(hp = hp, attack = attack)
+
+        val pokemon = Pokemon(
+            pokedexNumber = pokedexNumber,
+            name = form.name.trim(),
+            types = buildTypes(form),
+            level = form.level.trim().toInt(),
+            description = form.notes.trim(),
+            stats = stats,
+            imageUrl = buildOfficialArtworkUrl(pokedexNumber)
+        )
 
         viewModelScope.launch {
-            val apiStats: PokemonStats? = runCatching {
-                val nameOrId = if (_name.value.isNotBlank()) _name.value.lowercase().trim()
-                else pokedexNumberInt?.toString()
-                if (nameOrId != null) {
-                    pokemonApiService.getPokemonByName(nameOrId).toPokemonStats()
-                } else null
-            }.getOrNull()
-
-            val stats = apiStats ?: PokemonStats(
-                hp = _hp.value.toIntOrNull() ?: 10,
-                attack = _attack.value.toIntOrNull() ?: 5,
-                defense = 0,
-                specialAttack = 0,
-                specialDefense = 0,
-                speed = 0
+            _saveState.value = savePokemonUseCase(uid, pokemon).fold(
+                onSuccess = { SaveState.Success },
+                onFailure = { SaveState.Error(SAVE_ERROR_MESSAGE) }
             )
-
-            val pokemon = Pokemon(
-                pokedexNumber = resolvedPokedexNumber,
-                name = _name.value,
-                types = buildTypes(),
-                description = _notes.value,
-                heightM = 0.0,
-                weightKg = 0.0,
-                stats = stats,
-                imageUrl = buildOfficialArtworkUrl(pokedexNumberInt),
-                moves = emptyList()
-            )
-
-            savePokemonUseCase(uid, pokemon)
         }
     }
 
-    private fun buildOfficialArtworkUrl(pokedexNumber: Int?): String {
-        if (pokedexNumber == null || pokedexNumber <= 0) return ""
+    private fun buildOfficialArtworkUrl(pokedexNumber: Int): String {
+        if (pokedexNumber <= 0) return ""
         return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/$pokedexNumber.png"
     }
 
-    private fun buildTypes(): String {
-        return if (_secondaryType.value.isNotBlank()) {
-            "${_primaryType.value} / ${_secondaryType.value}"
-        } else {
-            _primaryType.value
-        }
+    private fun buildTypes(form: PokemonForm): String =
+        if (form.secondaryType.isNotBlank()) "${form.primaryType} / ${form.secondaryType}"
+        else form.primaryType
+
+    companion object {
+        const val DEFAULT_HP = 10
+        const val DEFAULT_ATTACK = 5
+        const val SAVE_ERROR_MESSAGE = "No se pudo guardar el Pokémon. Inténtalo de nuevo."
     }
 }
