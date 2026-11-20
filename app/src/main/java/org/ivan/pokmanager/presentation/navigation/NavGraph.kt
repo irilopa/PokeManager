@@ -12,10 +12,10 @@ import org.ivan.pokmanager.presentation.ui.screens.RegisterScreen
 
 
 @Composable
-fun NavGraph(navController: NavHostController) {
+fun NavGraph(navController: NavHostController, isLoggedIn: Boolean) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Login.route
+        startDestination = if (isLoggedIn) Screen.PokemonList.route else Screen.Login.route
     ) {
         composable(Screen.Login.route) {
             LoginScreen(navController)

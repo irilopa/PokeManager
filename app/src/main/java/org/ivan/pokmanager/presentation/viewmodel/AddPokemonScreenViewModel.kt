@@ -12,6 +12,7 @@ import org.ivan.pokmanager.data.model.repository.PokemonApiService
 import org.ivan.pokmanager.domain.model.Pokemon
 import org.ivan.pokmanager.domain.model.PokemonStats
 import org.ivan.pokmanager.domain.repository.AuthRepository
+import org.ivan.pokmanager.domain.type.PokemonType
 import org.ivan.pokmanager.domain.usecase.SavePokemonUseCase
 import org.ivan.pokmanager.domain.validation.PokemonField
 import org.ivan.pokmanager.domain.validation.PokemonForm
@@ -52,11 +53,7 @@ class AddPokemonScreenViewModel(
     val apiSuccess: StateFlow<Boolean> = _apiSuccess.asStateFlow()
 
     /** Lista de tipos disponibles para la UI. */
-    val pokemonTypes: List<String> = listOf(
-        "Normal", "Fuego", "Agua", "Planta", "Eléctrico", "Hielo", "Lucha",
-        "Veneno", "Tierra", "Volador", "Psíquico", "Bicho", "Roca", "Fantasma",
-        "Dragón", "Siniestro", "Acero", "Hada"
-    )
+    val pokemonTypes: List<String> = PokemonType.entries.map { it.spanishName }
 
     fun setName(value: String) {
         if (value != _form.value.name) fetchedStats = null

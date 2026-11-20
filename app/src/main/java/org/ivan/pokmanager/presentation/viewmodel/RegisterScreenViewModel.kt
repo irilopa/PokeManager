@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.ivan.pokmanager.data.model.UserDto
+import org.ivan.pokmanager.domain.repository.AuthError
 import org.ivan.pokmanager.domain.repository.AuthRepository
 import org.ivan.pokmanager.domain.repository.UserRepository
 
@@ -79,15 +80,8 @@ class RegisterScreenViewModel(
                     _registerSuccess.value = true
                 }
                 .onFailure { error ->
-                    _message.value = when {
-                        error.message?.contains("email address is already in use") == true ->
-                            "Este email ya está registrado"
-                        error.message?.contains("badly formatted") == true ->
-                            "El email no tiene un formato válido"
-                        error.message?.contains("weak-password") == true ->
-                            "La contraseña es demasiado débil"
-                        else -> error.message ?: "Error al registrarse. Inténtalo de nuevo."
-                    }
+                    _message.value = (error as? AuthError)?.message
+                        ?: "Error al registrarse. Inténtalo de nuevo."
                 }
 
             _isLoading.value = false

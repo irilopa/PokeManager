@@ -1,6 +1,7 @@
 package org.ivan.pokmanager.data.model.remote.dto
 
 import org.ivan.pokmanager.domain.model.PokemonStats
+import org.ivan.pokmanager.domain.type.PokemonType
 
 /** Nombre del tipo devuelto por la PokeAPI. */
 data class TypeNameDTO(val name: String)
@@ -30,15 +31,6 @@ fun PokemonResponse.toPokemonStats(): PokemonStats {
     )
 }
 
-/** Mapa de nombre de tipo en ingles a espanol. */
-private val typeTranslations = mapOf(
-    "normal" to "Normal", "fire" to "Fuego", "water" to "Agua",
-    "grass" to "Planta", "electric" to "Eléctrico", "ice" to "Hielo",
-    "fighting" to "Lucha", "poison" to "Veneno", "ground" to "Tierra",
-    "flying" to "Volador", "psychic" to "Psíquico", "bug" to "Bicho",
-    "rock" to "Roca", "ghost" to "Fantasma", "dragon" to "Dragón",
-    "dark" to "Siniestro", "steel" to "Acero", "fairy" to "Hada"
-)
-
-/** Traduce el nombre del tipo al español cuando existe un mapeo. */
-fun TypeNameDTO.toSpanish(): String = typeTranslations[name] ?: name.replaceFirstChar { it.uppercase() }
+/** Traduce el nombre del tipo de la PokeAPI al español. */
+fun TypeNameDTO.toSpanish(): String =
+    PokemonType.fromName(name)?.spanishName ?: name.replaceFirstChar { it.uppercase() }

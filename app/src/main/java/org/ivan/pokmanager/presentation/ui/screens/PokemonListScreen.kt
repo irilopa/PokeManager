@@ -14,21 +14,29 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CatchingPokemon
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -50,6 +58,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import org.ivan.pokmanager.domain.model.Pokemon
+import org.ivan.pokmanager.domain.type.PokemonType
 import org.ivan.pokmanager.presentation.navigation.Screen
 import org.ivan.pokmanager.presentation.state.UiState
 import org.ivan.pokmanager.presentation.ui.components.ActionMenu
@@ -57,6 +66,7 @@ import org.ivan.pokmanager.presentation.ui.components.ErrorContent
 import org.ivan.pokmanager.presentation.ui.components.LoadingContent
 import org.ivan.pokmanager.presentation.ui.components.MessageContent
 import org.ivan.pokmanager.presentation.ui.theme.PokeColors
+import org.ivan.pokmanager.presentation.ui.theme.TypeColors
 import org.ivan.pokmanager.presentation.viewmodel.PokemonListViewModel
 import org.koin.androidx.compose.koinViewModel
 
@@ -71,6 +81,9 @@ fun PokemonListScreen(
 ) {
 
     val uiState by viewModel.uiState.collectAsState()
+    val visiblePokemons by viewModel.visiblePokemons.collectAsState()
+    val query by viewModel.query.collectAsState()
+    val typeFilter by viewModel.typeFilter.collectAsState()
     val deleteError by viewModel.deleteError.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val primaryColor = PokeColors.PokeRed
@@ -135,17 +148,91 @@ fun PokemonListScreen(
                     modifier = contentModifier
                 )
             } else {
-                LazyColumn(
-                    modifier = contentModifier.padding(horizontal = 32.dp),
-                    contentPadding = PaddingValues(vertical = 24.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(state.data, key = { it.id }) { pokemon ->
-                        PokemonCard(pokemon, viewModel, primaryColor) {
-                            navController.navigate(Screen.PokemonDetail.createScreen(pokemon.id))
+                Column(modifier = contentModifier) {
+                    SearchAndFilters(
+                        query = query,
+                        selectedType = typeFilter,
+                        onQueryChange = viewModel::setQuery,
+                        onTypeClick = viewModel::toggleTypeFilter,
+                        onClear = viewModel::clearFilters
+                    )
+                    if (visiblePokemons.isEmpty()) {
+                        MessageContent(
+                            icon = Icons.Default.SearchOff,
+                            message = "No se encontraron Pokémon con esos filtros.",
+                            actionLabel = "Limpiar filtros",
+                            onAction = viewModel::clearFilters
+                        )
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 24.dp),
+                            contentPadding = PaddingValues(top = 8.dp, bottom = 88.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(visiblePokemons, key = { it.id }) { pokemon ->
+                                PokemonCard(pokemon, viewModel, primaryColor) {
+                                    navController.navigate(Screen.PokemonDetail.createScreen(pokemon.id))
+                                }
+                            }
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+/**
+ * Buscador por nombre y fila de chips de tipo. La «X» limpia ambos filtros.
+ */
+@Composable
+private fun SearchAndFilters(
+    query: String,
+    selectedType: PokemonType?,
+    onQueryChange: (String) -> Unit,
+    onTypeClick: (PokemonType) -> Unit,
+    onClear: () -> Unit
+) {
+    Column(modifier = Modifier.padding(top = 12.dp)) {
+        OutlinedTextField(
+            value = query,
+            onValueChange = onQueryChange,
+            placeholder = { Text("Buscar en tu equipo") },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+            trailingIcon = {
+                if (query.isNotEmpty() || selectedType != null) {
+                    IconButton(onClick = onClear) {
+                        Icon(Icons.Default.Close, contentDescription = "Limpiar filtros")
+                    }
+                }
+            },
+            singleLine = true,
+            shape = RoundedCornerShape(28.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = PokeColors.PokeRed,
+                unfocusedBorderColor = Color.Gray.copy(alpha = 0.4f)
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+        )
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(PokemonType.entries) { type ->
+                val selected = type == selectedType
+                FilterChip(
+                    selected = selected,
+                    onClick = { onTypeClick(type) },
+                    label = { Text(type.spanishName) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = TypeColors.background(type),
+                        selectedLabelColor = TypeColors.content(type)
+                    )
+                )
             }
         }
     }
