@@ -131,15 +131,18 @@ El código de la aplicación no define variables de entorno propias para Firebas
 │       ├── main/
 │       │   ├── AndroidManifest.xml   # Permisos y componentes Android
 │       │   ├── java/org/ivan/pokmanager/
-│       │   │   ├── data/             # DTO y acceso a PokéAPI
+│       │   │   ├── data/             # DTO, PokéAPI y repositorios de Firebase
 │       │   │   ├── di/               # Módulos de inyección de dependencias
-│       │   │   ├── domain/           # Modelos, repositorios y casos de uso
+│       │   │   ├── domain/           # Modelos, interfaces, casos de uso, validación y tabla de tipos
 │       │   │   └── presentation/     # Pantallas, navegación y ViewModels
 │       │   └── res/                  # Recursos Android
-│       ├── test/                     # Pruebas unitarias
+│       ├── test/                     # Pruebas unitarias y E2E con Firebase Emulator
 │       └── androidTest/              # Pruebas instrumentadas
+├── docs/screenshots/                 # Capturas del README
 ├── gradle/                           # Catálogo de versiones y wrapper
 ├── build.gradle.kts                  # Plugins del proyecto
+├── firebase.json                     # Configuración de Firebase CLI y emuladores
+├── firestore.rules                   # Reglas de seguridad de Firestore
 ├── gradle.properties                 # Propiedades de Gradle
 ├── gradlew                           # Gradle Wrapper para Unix
 ├── gradlew.bat                       # Gradle Wrapper para Windows
