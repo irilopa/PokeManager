@@ -16,3 +16,6 @@ local.properties
 
 # Firebase Emulator Suite
 *-debug.log
+
+# Kotlin compiler daemon
+.kotlin/
