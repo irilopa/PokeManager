@@ -206,7 +206,7 @@ Contributions are welcome:
 2. Add or update the relevant tests and make sure `./gradlew testDebugUnitTest` passes.
 3. Open a pull request describing the change and include screenshots if it affects the UI.
 
-The README exists in Spanish ([README.md](README.md)) and English (this file). If you change one, update the other in the same pull request; the `README sync` check verifies it.
+The README exists in Spanish ([README.md](README.md)) and English (this file). The Spanish version is the source: when a change is merged into `master`, the `README translate` workflow translates the differences with the Claude API and opens a pull request with the updated `README.en.md`. The `README sync` check verifies that both versions keep the same structure.
 
 For bugs or ideas, open an [issue](https://github.com/irilopa/PokeManager/issues).
 

@@ -206,7 +206,7 @@ Las contribuciones son bienvenidas:
 2. Añade o actualiza los tests correspondientes y comprueba que `./gradlew testDebugUnitTest` pasa.
 3. Abre un pull request describiendo el cambio y, si afecta a la interfaz, incluye capturas.
 
-El README existe en español (este archivo) y en inglés ([README.en.md](README.en.md)). Si cambias uno, actualiza el otro en el mismo pull request; la comprobación `README sync` lo verifica.
+El README existe en español (este archivo) y en inglés ([README.en.md](README.en.md)). La versión en español es la fuente: al fusionar un cambio en `master`, el workflow `README translate` traduce las diferencias con la API de Claude y abre un pull request con `README.en.md` actualizado. La comprobación `README sync` verifica que ambas versiones mantienen la misma estructura.
 
 Para errores o propuestas, abre un [issue](https://github.com/irilopa/PokeManager/issues).
 

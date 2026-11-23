@@ -19,3 +19,6 @@ local.properties
 
 # Kotlin compiler daemon
 .kotlin/
+
+# Python
+__pycache__/

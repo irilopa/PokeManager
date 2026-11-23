@@ -7,8 +7,12 @@ Compara lo que no depende del idioma:
   - enlaces externos (sin contar insignias de shields.io),
   - comandos de los bloques ```bash (ignorando marcadores como <tu-proyecto>).
 
-Con --base <ref>, además exige que si un README cambia respecto a esa referencia,
-el otro también cambie.
+Con --base <ref> (pull requests), según qué versiones cambian respecto a esa referencia:
+  - las dos: se comparan como arriba;
+  - solo README.md: se avisa y no se compara; el workflow «README translate»
+    genera la versión inglesa al fusionar;
+  - solo README.en.md: falla, porque el español es la fuente. Se permite con
+    --translation-pr, que usa la rama del workflow de traducción.
 """
 import argparse
 import re
@@ -45,6 +49,8 @@ def changed_files(base: str) -> set[str]:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--base", help="referencia git con la que comparar (p. ej. origin/master)")
+    parser.add_argument("--translation-pr", action="store_true",
+                        help="el pull request viene del workflow de traducción")
     args = parser.parse_args()
 
     errors = []
@@ -54,6 +60,20 @@ def main() -> int:
     if errors:
         print("\n".join(errors))
         return 1
+
+    if args.base:
+        changed = changed_files(args.base)
+        es_changed, en_changed = str(ES) in changed, str(EN) in changed
+        if es_changed and not en_changed:
+            print(f"::warning::Solo cambia {ES}. El workflow «README translate» actualizará {EN} al fusionar.")
+            return 0
+        if en_changed and not es_changed and not args.translation_pr:
+            print(f"Se ha modificado {EN} pero no {ES}. La versión en español es la fuente: "
+                  f"cambia {ES} y deja que el workflow «README translate» genere la traducción.")
+            return 1
+        if not es_changed and not en_changed:
+            print("Ningún README cambia en este pull request.")
+            return 0
 
     es, en = ES.read_text(encoding="utf-8"), EN.read_text(encoding="utf-8")
     checks = [
@@ -65,13 +85,6 @@ def main() -> int:
     for name, a, b in checks:
         if a != b:
             errors.append(f"Distintos {name}:\n  README.md:    {a}\n  README.en.md: {b}")
-
-    if args.base:
-        changed = changed_files(args.base)
-        es_changed, en_changed = str(ES) in changed, str(EN) in changed
-        if es_changed != en_changed:
-            only, other = (ES, EN) if es_changed else (EN, ES)
-            errors.append(f"Se ha modificado {only} pero no {other}: actualiza las dos versiones en el mismo pull request.")
 
     if errors:
         print("README no sincronizado:\n\n" + "\n\n".join(errors))

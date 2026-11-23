@@ -6,11 +6,6 @@ on:
       - README.md
       - README.en.md
       - .github/scripts/check_readme_sync.py
-  push:
-    branches: [master]
-    paths:
-      - README.md
-      - README.en.md
 
 permissions:
   contents: read
@@ -32,8 +27,6 @@ jobs:
 
       - name: Comprobar estructura y cambios en ambas versiones
         run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            python .github/scripts/check_readme_sync.py --base "origin/${{ github.base_ref }}"
-          else
-            python .github/scripts/check_readme_sync.py
-          fi
+          extra=""
+          if [ "${{ github.head_ref }}" = "automation/readme-en" ]; then extra="--translation-pr"; fi
+          python .github/scripts/check_readme_sync.py --base "origin/${{ github.base_ref }}" $extra
