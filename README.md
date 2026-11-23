@@ -6,6 +6,8 @@
 
 **Gestiona tu colección de Pokémon desde Android: regístralos, consulta su ficha y conoce sus debilidades.**
 
+**Español** · [English](README.en.md)
+
 [![CI](https://github.com/irilopa/PokeManager/actions/workflows/ci.yml/badge.svg)](https://github.com/irilopa/PokeManager/actions/workflows/ci.yml)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0.21-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org/)
 [![Android](https://img.shields.io/badge/Android-API%2026%2B-3DDC84?logo=android&logoColor=white)](https://developer.android.com/)
@@ -203,6 +205,8 @@ Las contribuciones son bienvenidas:
 1. Haz un fork y crea una rama desde `master` (`git checkout -b feature/mi-mejora`).
 2. Añade o actualiza los tests correspondientes y comprueba que `./gradlew testDebugUnitTest` pasa.
 3. Abre un pull request describiendo el cambio y, si afecta a la interfaz, incluye capturas.
+
+El README existe en español (este archivo) y en inglés ([README.en.md](README.en.md)). Si cambias uno, actualiza el otro en el mismo pull request; la comprobación `README sync` lo verifica.
 
 Para errores o propuestas, abre un [issue](https://github.com/irilopa/PokeManager/issues).
 
