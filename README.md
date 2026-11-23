@@ -6,6 +6,7 @@
 
 **Gestiona tu colección de Pokémon desde Android: regístralos, consulta su ficha y conoce sus debilidades.**
 
+[![CI](https://github.com/irilopa/PokeManager/actions/workflows/ci.yml/badge.svg)](https://github.com/irilopa/PokeManager/actions/workflows/ci.yml)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0.21-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org/)
 [![Android](https://img.shields.io/badge/Android-API%2026%2B-3DDC84?logo=android&logoColor=white)](https://developer.android.com/)
 [![Jetpack Compose](https://img.shields.io/badge/UI-Jetpack%20Compose-4285F4?logo=jetpackcompose&logoColor=white)](https://developer.android.com/compose)
@@ -30,6 +31,7 @@
 - [Estructura del proyecto](#estructura-del-proyecto)
 - [Hoja de ruta](#hoja-de-ruta)
 - [Contribuir](#contribuir)
+- [Autor](#autor)
 - [Licencia](#licencia)
 - [Aviso legal](#aviso-legal)
 
@@ -134,6 +136,8 @@ La app no necesita variables de entorno ni claves adicionales: Firebase se confi
 | Extremo a extremo | Registro, login, colección, búsqueda, detalle y cierre de sesión con el SDK real de Firebase | ver abajo |
 | Capturas del README | Genera las imágenes de `docs/screenshots/` con una colección de ejemplo | ver abajo |
 
+Cada push a `master` y cada pull request ejecutan la compilación y **toda la suite, incluidas las pruebas E2E contra Firebase Emulator Suite**, en [GitHub Actions](https://github.com/irilopa/PokeManager/actions/workflows/ci.yml). El informe de tests, las capturas y el APK de depuración quedan como artefactos de cada ejecución.
+
 Las pruebas E2E y de capturas usan Robolectric contra **Firebase Emulator Suite**, sin tocar ningún proyecto real. Si los emuladores no están arrancados, se omiten y la suite unitaria sigue en verde.
 
 ```bash
@@ -201,6 +205,16 @@ Las contribuciones son bienvenidas:
 3. Abre un pull request describiendo el cambio y, si afecta a la interfaz, incluye capturas.
 
 Para errores o propuestas, abre un [issue](https://github.com/irilopa/PokeManager/issues).
+
+## Autor
+
+**Ivan Lopez Rilopa** · Desarrollador Android
+
+Diseño, arquitectura y desarrollo de PokéManager: app nativa en Kotlin con Jetpack Compose, backend en Firebase y pruebas automatizadas de extremo a extremo.
+
+[![GitHub](https://img.shields.io/badge/GitHub-irilopa-181717?logo=github)](https://github.com/irilopa)
+
+¿Tienes una oportunidad o sugerencia? Abre un [issue](https://github.com/irilopa/PokeManager/issues) o contáctame a través de mi perfil de GitHub.
 
 ## Licencia
 
