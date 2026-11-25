@@ -108,7 +108,7 @@ fun PokemonDetailScreen(navController: NavController, pokemonId: String) {
     ) { innerPadding ->
         val contentModifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
             .padding(innerPadding)
 
         when (val state = uiState) {
@@ -167,7 +167,7 @@ private fun PokemonDetailContent(pokemon: Pokemon, modifier: Modifier = Modifier
                     modifier = Modifier
                         .size(140.dp)
                         .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.7f)),
+                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -193,7 +193,7 @@ private fun PokemonDetailContent(pokemon: Pokemon, modifier: Modifier = Modifier
                     if (pokemon.level > 0) add("Nivel ${pokemon.level}")
                 }.joinToString(" · ")
                 if (header.isNotEmpty()) {
-                    Text(header, style = MaterialTheme.typography.titleMedium, color = Color.Gray)
+                    Text(header, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
 
@@ -207,12 +207,12 @@ private fun PokemonDetailContent(pokemon: Pokemon, modifier: Modifier = Modifier
 
             if (pokemon.description.isNotBlank()) {
                 Card(
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF7F7F7)),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text("Notas del entrenador", style = MaterialTheme.typography.labelLarge, color = Color.Gray)
+                        Text("Notas del entrenador", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text(pokemon.description, style = MaterialTheme.typography.bodyMedium)
                     }
                 }
@@ -269,7 +269,7 @@ private fun DefenseSection(types: List<PokemonType>) {
         MatchupGroup("Débil a", profile.weaknesses)
         MatchupGroup("Resistente a", profile.resistances)
         if (profile.immunities.isNotEmpty()) {
-            Text("Inmune a", style = MaterialTheme.typography.labelLarge, color = Color.Gray)
+            Text("Inmune a", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -284,7 +284,7 @@ private fun DefenseSection(types: List<PokemonType>) {
 @Composable
 private fun MatchupGroup(title: String, matchups: List<TypeMatchup>) {
     if (matchups.isEmpty()) return
-    Text(title, style = MaterialTheme.typography.labelLarge, color = Color.Gray)
+    Text(title, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)

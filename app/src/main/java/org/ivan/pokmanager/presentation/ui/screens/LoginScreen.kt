@@ -51,7 +51,7 @@ fun LoginScreen(
     var showError by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
 
-    val primaryColor = PokeColors.PokeRed
+    val primaryColor = MaterialTheme.colorScheme.primary
 
 
     LaunchedEffect(loginMessage) {
@@ -78,7 +78,7 @@ fun LoginScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(it)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 32.dp, vertical = 24.dp),
@@ -104,7 +104,7 @@ fun LoginScreen(
             Text(
                 text = "Gestiona tu equipo Pokémon",
                 fontSize = 14.sp,
-                color = Color.Gray
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -207,7 +207,7 @@ fun LoginScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                Text("¿No tienes cuenta?", fontSize = 14.sp, color = Color.Gray)
+                Text("¿No tienes cuenta?", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 TextButton(onClick = { navController.navigate(Screen.Register.route) }) {
                     Text(
                         "Regístrate",

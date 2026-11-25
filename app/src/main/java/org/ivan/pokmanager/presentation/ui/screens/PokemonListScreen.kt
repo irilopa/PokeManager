@@ -93,7 +93,7 @@ fun PokemonListScreen(
     }
     val deleteError by viewModel.deleteError.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-    val primaryColor = PokeColors.PokeRed
+    val primaryColor = MaterialTheme.colorScheme.primary
     val goToAddPokemon = { navController.navigate(Screen.AddPokemon.route) }
 
     LaunchedEffect(deleteError) {
@@ -120,19 +120,19 @@ fun PokemonListScreen(
                 FloatingActionButton(
                     onClick = goToAddPokemon,
                     containerColor = primaryColor,
-                    contentColor = Color.White
+                    contentColor = MaterialTheme.colorScheme.onPrimary
                 ) {
                     Icon(Icons.Default.Add, contentDescription = "Añadir Pokémon")
                 }
             }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = Color.White
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         val contentModifier = Modifier
             .padding(innerPadding)
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
 
         when (val state = uiState) {
             UiState.Loading -> LoadingContent(contentModifier)
@@ -215,8 +215,8 @@ private fun SearchAndFilters(
             singleLine = true,
             shape = RoundedCornerShape(28.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = PokeColors.PokeRed,
-                unfocusedBorderColor = Color.Gray.copy(alpha = 0.4f)
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline
             ),
             modifier = Modifier
                 .fillMaxWidth()
@@ -258,7 +258,7 @@ fun PokemonCard(
             .fillMaxWidth()
             .clickable { onClick() },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
         shape = RoundedCornerShape(12.dp)
     ) {
         Row(
@@ -287,17 +287,17 @@ fun PokemonCard(
                     text = pokemon.name,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = if (pokemon.level > 0) "Nv. ${pokemon.level} · ${pokemon.types}" else pokemon.types,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
                     text = "HP: ${pokemon.stats.hp} | Atk: ${pokemon.stats.attack}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray.copy(alpha = 0.9f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             IconButton(onClick = { showDialog = true }) {

@@ -45,6 +45,7 @@
 - **Búsqueda y filtros**: búsqueda por nombre (sin distinguir mayúsculas ni tildes) combinable con un filtro por cualquiera de los 18 tipos.
 - **Ficha detallada**: imagen oficial, tipos, nivel, notas del entrenador, estadísticas base con barras y total.
 - **Debilidades y resistencias**: calculadas con la tabla de tipos (Gen 6+), incluidos los Pokémon de doble tipo (×4, ×2, ×½, ×¼ e inmunidades).
+- **Modo claro y oscuro**: colores de la marca con contraste WCAG AA en los dos.
 - **Estados claros**: indicadores de carga, mensajes de error con «Reintentar», pantalla de bienvenida cuando la colección está vacía y confirmación al guardar.
 
 ## Capturas
@@ -56,6 +57,10 @@
 | Búsqueda | Detalle | Debilidades |
 | :---: | :---: | :---: |
 | <img src="docs/screenshots/busqueda.png" alt="Búsqueda por nombre en la colección" width="230"> | <img src="docs/screenshots/detalle.png" alt="Detalle de Charizard con tipos y estadísticas" width="230"> | <img src="docs/screenshots/debilidades.png" alt="Debilidades, resistencias e inmunidades de Charizard" width="230"> |
+
+| Modo oscuro: colección | Modo oscuro: detalle |
+| :---: | :---: |
+| <img src="docs/screenshots/oscuro-coleccion.png" alt="Colección en modo oscuro" width="230"> | <img src="docs/screenshots/oscuro-detalle.png" alt="Detalle de Charizard en modo oscuro" width="230"> |
 
 <details>
 <summary><strong>Ver demo animada</strong></summary>
@@ -156,7 +161,7 @@ firebase emulators:exec --only auth,firestore --project pokemanager-6113d \
   "./gradlew testDebugUnitTest --tests '*ReadmeScreenshotsTest*'"
 ```
 
-Las capturas se guardan en `app/build/e2e-screenshots/` y `app/build/readme-screenshots/`.
+Las capturas se guardan en `app/build/e2e-screenshots/`, `app/build/readme-screenshots/` y, en modo oscuro, `app/build/readme-screenshots-dark/`.
 
 ## Datos y seguridad
 

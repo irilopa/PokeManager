@@ -49,7 +49,7 @@ import java.time.Duration
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [35], qualifiers = "w411dp-h891dp-xxhdpi")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
-class ReadmeScreenshotsTest {
+open class ReadmeScreenshotsTest {
 
     companion object {
         private const val PROJECT = "pokemanager-6113d"
@@ -70,7 +70,13 @@ class ReadmeScreenshotsTest {
     @After
     fun tearDown() = FirebaseEmulators.reset()
 
-    private val shotsDir = File(System.getProperty("user.dir"), "build/readme-screenshots").apply { mkdirs() }
+    /** Carpeta de salida (dentro de app/build); las subclases la cambian. */
+    protected open val shotsFolder = "readme-screenshots"
+
+    /** Email del usuario de ejemplo (distinto por subclase: comparten el emulador). */
+    protected open val demoEmail = "ash@pokemanager.dev"
+
+    private val shotsDir by lazy { File(System.getProperty("user.dir"), "build/$shotsFolder").apply { mkdirs() } }
 
     private data class Sample(
         val number: Int, val name: String, val types: String, val level: Int, val notes: String,
@@ -155,7 +161,7 @@ class ReadmeScreenshotsTest {
 
     @Test
     fun capturas_del_readme() {
-        val email = "ash@pokemanager.dev"
+        val email = demoEmail
         seedUser(email)
 
         waitForText("Iniciar Sesión")

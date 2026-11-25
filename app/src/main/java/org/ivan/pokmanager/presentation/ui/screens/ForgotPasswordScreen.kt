@@ -88,7 +88,7 @@ fun ForgotPasswordScreen(
                 Icon(
                     Icons.Default.MarkEmailRead,
                     contentDescription = null,
-                    tint = PokeColors.PokeRed,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(72.dp)
                 )
                 Text(
@@ -103,7 +103,7 @@ fun ForgotPasswordScreen(
                 )
                 Button(
                     onClick = { navController.navigateUp() },
-                    colors = ButtonDefaults.buttonColors(containerColor = PokeColors.PokeRed),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     modifier = Modifier.fillMaxWidth()
                 ) { Text("Volver a iniciar sesión") }
             } else {
@@ -115,7 +115,7 @@ fun ForgotPasswordScreen(
                     value = email,
                     onValueChange = viewModel::setEmail,
                     label = { Text("Email") },
-                    leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = PokeColors.PokeRed) },
+                    leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
                     singleLine = true,
                     enabled = !sending,
                     isError = state is PasswordResetState.Error,
@@ -129,14 +129,14 @@ fun ForgotPasswordScreen(
                 Button(
                     onClick = viewModel::sendReset,
                     enabled = !sending && email.isNotBlank(),
-                    colors = ButtonDefaults.buttonColors(containerColor = PokeColors.PokeRed),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp)
                 ) {
                     if (sending) {
-                        CircularProgressIndicator(Modifier.size(22.dp), color = Color.White, strokeWidth = 2.dp)
+                        CircularProgressIndicator(Modifier.size(22.dp), color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
                     } else {
                         Text("Enviar enlace")
                     }

@@ -7,6 +7,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,7 +31,7 @@ fun PokemonDropdown(
     options: List<String>,
     selectedOption: String,
     onOptionSelected: (String) -> Unit,
-    primaryColor: Color = PokeColors.PokeRed,
+    primaryColor: Color = MaterialTheme.colorScheme.primary,
     errorMessage: String? = null
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -50,7 +51,7 @@ fun PokemonDropdown(
             supportingText = errorMessage?.let { { Text(it) } },
             colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(
                 focusedBorderColor = primaryColor,
-                unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f)
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline
             ),
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier

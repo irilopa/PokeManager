@@ -29,7 +29,7 @@ fun LoadingContent(modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        CircularProgressIndicator(color = PokeColors.PokeRed)
+        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
     }
 }
 
@@ -49,12 +49,12 @@ fun MessageContent(
         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Icon(icon, contentDescription = null, tint = PokeColors.PokeRed, modifier = Modifier.size(72.dp))
+        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(72.dp))
         Text(message, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
         if (actionLabel != null) {
             Button(
                 onClick = onAction,
-                colors = ButtonDefaults.buttonColors(containerColor = PokeColors.PokeRed)
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) { Text(actionLabel) }
         }
     }

@@ -45,6 +45,7 @@
 - **Search and filters**: search by name (case- and accent-insensitive) combined with a filter for any of the 18 types.
 - **Detailed profile**: official artwork, types, level, trainer notes, base stats with bars and total.
 - **Weaknesses and resistances**: computed with the type chart (Gen 6+), including dual-type Pokémon (×4, ×2, ×½, ×¼ and immunities).
+- **Light and dark mode**: brand colors with WCAG AA contrast in both.
 - **Clear states**: loading indicators, error messages with "Retry", a welcome screen when the collection is empty and save confirmation.
 
 ## Screenshots
@@ -56,6 +57,10 @@
 | Search | Detail | Weaknesses |
 | :---: | :---: | :---: |
 | <img src="docs/screenshots/busqueda.png" alt="Searching the collection by name" width="230"> | <img src="docs/screenshots/detalle.png" alt="Charizard detail with types and stats" width="230"> | <img src="docs/screenshots/debilidades.png" alt="Charizard's weaknesses, resistances and immunities" width="230"> |
+
+| Dark mode: collection | Dark mode: detail |
+| :---: | :---: |
+| <img src="docs/screenshots/oscuro-coleccion.png" alt="Collection in dark mode" width="230"> | <img src="docs/screenshots/oscuro-detalle.png" alt="Charizard detail in dark mode" width="230"> |
 
 <details>
 <summary><strong>Watch the animated demo</strong></summary>
@@ -156,7 +161,7 @@ firebase emulators:exec --only auth,firestore --project pokemanager-6113d \
   "./gradlew testDebugUnitTest --tests '*ReadmeScreenshotsTest*'"
 ```
 
-Screenshots are saved to `app/build/e2e-screenshots/` and `app/build/readme-screenshots/`.
+Screenshots are saved to `app/build/e2e-screenshots/`, `app/build/readme-screenshots/` and, in dark mode, `app/build/readme-screenshots-dark/`.
 
 ## Data and security
 

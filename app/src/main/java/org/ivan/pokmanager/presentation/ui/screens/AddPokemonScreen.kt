@@ -95,7 +95,7 @@ fun AddPokemonScreen(
     val isSaving = saveState is SaveState.Saving
     val snackbarHostState = remember { SnackbarHostState() }
 
-    val primaryColor = PokeColors.PokeRed
+    val primaryColor = MaterialTheme.colorScheme.primary
 
     LaunchedEffect(apiSuccess) {
         if (apiSuccess) {
@@ -130,7 +130,7 @@ fun AddPokemonScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = primaryColor,
+                    containerColor = PokeColors.PokeRed,
                     titleContentColor = Color.White,
                     navigationIconContentColor = Color.White
                 )
@@ -151,7 +151,7 @@ fun AddPokemonScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(PokeColors.PokeWhite)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 32.dp, vertical = 24.dp),
@@ -169,7 +169,7 @@ fun AddPokemonScreen(
                 text = if (vm.isEditing) "Actualiza los datos de tu Pokémon" else "¡Añade un nuevo Pokémon a tu equipo!",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = PokeColors.PokeDarkGray
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
@@ -216,7 +216,7 @@ fun AddPokemonScreen(
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = primaryColor,
-                        unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f)
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
                     )
                 )
 
@@ -240,7 +240,7 @@ fun AddPokemonScreen(
                             Icon(
                                 imageVector = Icons.Default.Search,
                                 contentDescription = "Buscar en Pokédex",
-                                tint = if (name.isNotBlank()) primaryColor else Color.Gray,
+                                tint = if (name.isNotBlank()) primaryColor else MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(28.dp)
                             )
                         }
@@ -265,7 +265,7 @@ fun AddPokemonScreen(
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = primaryColor,
-                    unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f)
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
                 )
             )
 
@@ -309,7 +309,7 @@ fun AddPokemonScreen(
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = primaryColor,
-                        unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f)
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
                     )
                 )
 
@@ -323,7 +323,7 @@ fun AddPokemonScreen(
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = primaryColor,
-                        unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f)
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
                     )
                 )
             }
@@ -340,7 +340,7 @@ fun AddPokemonScreen(
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = primaryColor,
-                    unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f)
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
                 )
             )
 
@@ -362,7 +362,7 @@ fun AddPokemonScreen(
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = primaryColor,
-                    unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f)
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
                 )
             )
 
@@ -380,7 +380,7 @@ fun AddPokemonScreen(
                 if (isSaving) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(24.dp),
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         strokeWidth = 2.dp
                     )
                     Spacer(modifier = Modifier.size(12.dp))
