@@ -9,6 +9,8 @@ sealed class Screen(val route: String) {
 
     data object Register : Screen("register")
 
+    data object ForgotPassword : Screen("forgotPassword")
+
     data object PokemonList : Screen("pokemonList")
 
     data object AddPokemon : Screen("addPokemon")

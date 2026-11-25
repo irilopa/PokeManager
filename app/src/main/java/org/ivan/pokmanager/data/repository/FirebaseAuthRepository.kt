@@ -58,6 +58,18 @@ class FirebaseAuthRepository(
         Result.failure(e as? AuthError ?: AuthError(e.toUserMessage(), e))
     }
 
+    override suspend fun sendPasswordReset(email: String): Result<Unit> = try {
+        firebaseAuth.sendPasswordResetEmail(email).await()
+        Result.success(Unit)
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: FirebaseAuthInvalidUserException) {
+        // No se revela si la cuenta existe.
+        Result.success(Unit)
+    } catch (e: Exception) {
+        Result.failure(e as? AuthError ?: AuthError(e.toUserMessage(), e))
+    }
+
     override suspend fun deleteAccount(): Result<Unit> = try {
         val user = firebaseAuth.currentUser ?: throw AuthError(NO_SESSION_ERROR)
         user.delete().await()

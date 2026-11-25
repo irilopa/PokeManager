@@ -35,6 +35,15 @@ class FakeAuthRepository(
         else Result.failure(AuthError("La contraseña no es correcta."))
     }
 
+    val resetEmails = mutableListOf<String>()
+    var failPasswordReset = false
+
+    override suspend fun sendPasswordReset(email: String): Result<Unit> {
+        if (failPasswordReset) return Result.failure(AuthError("Sin conexión. Comprueba tu red e inténtalo de nuevo."))
+        resetEmails += email
+        return Result.success(Unit)
+    }
+
     override suspend fun deleteAccount(): Result<Unit> {
         log += "deleteAccount"
         if (failDeleteAccount) return Result.failure(IllegalStateException("auth down"))

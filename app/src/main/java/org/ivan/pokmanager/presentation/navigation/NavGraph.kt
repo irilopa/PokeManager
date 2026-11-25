@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import org.ivan.pokmanager.presentation.ui.screens.AddPokemonScreen
 import org.ivan.pokmanager.presentation.ui.screens.DeleteAccountScreen
+import org.ivan.pokmanager.presentation.ui.screens.ForgotPasswordScreen
 import org.ivan.pokmanager.presentation.ui.screens.LoginScreen
 import org.ivan.pokmanager.presentation.ui.screens.PokemonDetailScreen
 import org.ivan.pokmanager.presentation.ui.screens.PokemonListScreen
@@ -23,6 +24,9 @@ fun NavGraph(navController: NavHostController, isLoggedIn: Boolean) {
         }
         composable(Screen.Register.route) {
             RegisterScreen(navController)
+        }
+        composable(Screen.ForgotPassword.route) {
+            ForgotPasswordScreen(navController)
         }
         composable(Screen.PokemonList.route) {
             PokemonListScreen(navController)

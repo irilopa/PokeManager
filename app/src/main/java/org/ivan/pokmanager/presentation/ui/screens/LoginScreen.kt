@@ -164,7 +164,14 @@ fun LoginScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            TextButton(
+                onClick = { navController.navigate(Screen.ForgotPassword.route) },
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Text("¿Has olvidado tu contraseña?", color = primaryColor)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             Button(
                 onClick = {

@@ -275,4 +275,39 @@ class AppFlowEmulatorTest {
         compose.onNodeWithText("Iniciar Sesión").performClick()
         compose.waitForText("Email o contraseña incorrectos")
     }
+
+    /** Correos de restablecimiento que ha generado el emulador de Auth para un email. */
+    private fun passwordResetCodes(email: String): Int {
+        val url = URL("http://127.0.0.1:${FirebaseEmulators.AUTH_PORT}/emulator/v1/projects/" +
+            "${FirebaseEmulators.PROJECT}/oobCodes")
+        val conn = url.openConnection(Proxy.NO_PROXY) as HttpURLConnection
+        val codes = JSONObject(conn.inputStream.bufferedReader().readText()).optJSONArray("oobCodes") ?: return 0
+        return (0 until codes.length()).map { codes.getJSONObject(it) }
+            .count { it.optString("email") == email && it.optString("requestType") == "PASSWORD_RESET" }
+    }
+
+    @Test
+    fun recuperar_contrasena_envia_el_correo_sin_revelar_si_la_cuenta_existe() {
+        val email = "brock${System.currentTimeMillis()}@test.com"
+        register(email, FirebaseEmulators.randomCredential())
+        logout()
+
+        compose.onNodeWithText("¿Has olvidado tu contraseña?").performClick()
+        compose.waitForText("Enviar enlace")
+        type("Email", email)
+        shot("11_recuperar_contrasena")
+        compose.onNodeWithText("Enviar enlace").performClick()
+        compose.waitForText("Volver a iniciar sesión")
+        shot("12_recuperar_contrasena_enviado")
+        assertEquals(1, passwordResetCodes(email))
+
+        // Con un email que no existe se muestra el mismo mensaje
+        compose.onNodeWithText("Volver a iniciar sesión").performClick()
+        compose.waitForText("¡Bienvenido de nuevo!")
+        compose.onNodeWithText("¿Has olvidado tu contraseña?").performClick()
+        compose.waitForText("Enviar enlace")
+        type("Email", "nadie${System.currentTimeMillis()}@test.com")
+        compose.onNodeWithText("Enviar enlace").performClick()
+        compose.waitForText("Volver a iniciar sesión")
+    }
 }
