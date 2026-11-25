@@ -70,7 +70,7 @@ fun StatBar(label: String, value: Int, modifier: Modifier = Modifier) {
                 .weight(1f)
                 .height(10.dp)
                 .clip(RoundedCornerShape(50))
-                .background(Color(0xFFEDEDED))
+                .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
             Box(
                 modifier = Modifier

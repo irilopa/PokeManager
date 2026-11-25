@@ -1,21 +1,13 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# Reglas de R8 para la versión de publicación.
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Firestore (toObject/set) y Gson leen y escriben los campos por reflexión:
+# hay que conservar los modelos tal cual, con sus constructores sin argumentos.
+-keep class org.ivan.pokmanager.domain.model.** { *; }
+-keep class org.ivan.pokmanager.data.model.** { *; }
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Genéricos (List<...> en los DTO de Gson) y anotaciones como @DocumentId.
+-keepattributes Signature, *Annotation*, InnerClasses, EnclosingMethod
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Crashlytics: trazas con números de línea legibles tras desofuscar.
+-keepattributes SourceFile, LineNumberTable
+-keep public class * extends java.lang.Exception

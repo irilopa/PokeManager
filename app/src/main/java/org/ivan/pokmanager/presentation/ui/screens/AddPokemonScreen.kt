@@ -58,10 +58,14 @@ import androidx.navigation.compose.rememberNavController
 import org.ivan.pokmanager.domain.validation.PokemonField
 import org.ivan.pokmanager.domain.validation.PokemonFormValidator
 import org.ivan.pokmanager.presentation.state.SaveState
+import org.ivan.pokmanager.presentation.state.UiState
+import org.ivan.pokmanager.presentation.ui.components.ErrorContent
+import org.ivan.pokmanager.presentation.ui.components.LoadingContent
 import org.ivan.pokmanager.presentation.ui.components.PokemonDropdown
 import org.ivan.pokmanager.presentation.ui.theme.PokeColors
 import org.ivan.pokmanager.presentation.viewmodel.AddPokemonScreenViewModel
 import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 /**
  * Pantalla para registrar un Pokemon y autocompletar datos desde la PokeAPI.
@@ -70,9 +74,11 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun AddPokemonScreen(
     navController: NavController,
+    pokemonId: String = "",
     viewModel: AddPokemonScreenViewModel? = null
 ) {
-    val vm: AddPokemonScreenViewModel = viewModel ?: koinViewModel()
+    val vm: AddPokemonScreenViewModel = viewModel ?: koinViewModel(parameters = { parametersOf(pokemonId) })
+    val loadState by vm.loadState.collectAsState()
 
     val form by vm.form.collectAsState()
     val hp by vm.hp.collectAsState()
@@ -89,7 +95,7 @@ fun AddPokemonScreen(
     val isSaving = saveState is SaveState.Saving
     val snackbarHostState = remember { SnackbarHostState() }
 
-    val primaryColor = PokeColors.PokeRed
+    val primaryColor = MaterialTheme.colorScheme.primary
 
     LaunchedEffect(apiSuccess) {
         if (apiSuccess) {
@@ -101,7 +107,13 @@ fun AddPokemonScreen(
     // Solo se vuelve a la lista cuando Firestore confirma el guardado.
     LaunchedEffect(saveState) {
         when (val state = saveState) {
-            SaveState.Success -> navController.navigateUp()
+            SaveState.Success -> {
+                if (vm.isEditing) {
+                    // Avisa al detalle de que debe recargar los datos.
+                    navController.previousBackStackEntry?.savedStateHandle?.set(POKEMON_UPDATED_KEY, true)
+                }
+                navController.navigateUp()
+            }
             is SaveState.Error -> snackbarHostState.showSnackbar(state.message)
             else -> Unit
         }
@@ -111,24 +123,35 @@ fun AddPokemonScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Registrar Pokémon") },
+                title = { Text(if (vm.isEditing) "Editar Pokémon" else "Registrar Pokémon") },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = primaryColor,
+                    containerColor = PokeColors.PokeRed,
                     titleContentColor = Color.White,
                     navigationIconContentColor = Color.White
                 )
             )
         }
     ) { innerPadding ->
+        when (val state = loadState) {
+            UiState.Loading -> {
+                LoadingContent(Modifier.padding(innerPadding))
+                return@Scaffold
+            }
+            is UiState.Error -> {
+                ErrorContent(state.message, onRetry = vm::retryLoad, modifier = Modifier.padding(innerPadding))
+                return@Scaffold
+            }
+            is UiState.Success -> Unit
+        }
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(PokeColors.PokeWhite)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 32.dp, vertical = 24.dp),
@@ -143,10 +166,10 @@ fun AddPokemonScreen(
                 tint = primaryColor
             )
             Text(
-                text = "¡Añade un nuevo Pokémon a tu equipo!",
+                text = if (vm.isEditing) "Actualiza los datos de tu Pokémon" else "¡Añade un nuevo Pokémon a tu equipo!",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = PokeColors.PokeDarkGray
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
@@ -193,7 +216,7 @@ fun AddPokemonScreen(
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = primaryColor,
-                        unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f)
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
                     )
                 )
 
@@ -217,7 +240,7 @@ fun AddPokemonScreen(
                             Icon(
                                 imageVector = Icons.Default.Search,
                                 contentDescription = "Buscar en Pokédex",
-                                tint = if (name.isNotBlank()) primaryColor else Color.Gray,
+                                tint = if (name.isNotBlank()) primaryColor else MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(28.dp)
                             )
                         }
@@ -242,7 +265,7 @@ fun AddPokemonScreen(
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = primaryColor,
-                    unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f)
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
                 )
             )
 
@@ -286,7 +309,7 @@ fun AddPokemonScreen(
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = primaryColor,
-                        unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f)
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
                     )
                 )
 
@@ -300,7 +323,7 @@ fun AddPokemonScreen(
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = primaryColor,
-                        unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f)
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
                     )
                 )
             }
@@ -317,7 +340,7 @@ fun AddPokemonScreen(
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = primaryColor,
-                    unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f)
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
                 )
             )
 
@@ -339,7 +362,7 @@ fun AddPokemonScreen(
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = primaryColor,
-                    unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f)
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
                 )
             )
 
@@ -357,13 +380,13 @@ fun AddPokemonScreen(
                 if (isSaving) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(24.dp),
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         strokeWidth = 2.dp
                     )
                     Spacer(modifier = Modifier.size(12.dp))
                     Text("Guardando…", fontSize = 18.sp)
                 } else {
-                    Text("Guardar Pokémon", fontSize = 18.sp)
+                    Text(if (vm.isEditing) "Guardar cambios" else "Guardar Pokémon", fontSize = 18.sp)
                 }
             }
         }
@@ -377,3 +400,6 @@ fun AddPokemonScreen(
 fun AddPokemonScreenPreview() {
     AddPokemonScreen(navController = rememberNavController())
 }
+
+/** Clave del savedStateHandle con la que el formulario avisa al detalle de que hubo cambios. */
+const val POKEMON_UPDATED_KEY = "pokemon_updated"

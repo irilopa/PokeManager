@@ -17,6 +17,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CatchingPokemon
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -30,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -46,6 +48,7 @@ import org.ivan.pokmanager.domain.model.PokemonStats
 import org.ivan.pokmanager.domain.type.PokemonType
 import org.ivan.pokmanager.domain.type.TypeChart
 import org.ivan.pokmanager.domain.type.TypeMatchup
+import org.ivan.pokmanager.presentation.navigation.Screen
 import org.ivan.pokmanager.presentation.state.UiState
 import org.ivan.pokmanager.presentation.ui.components.ErrorContent
 import org.ivan.pokmanager.presentation.ui.components.LoadingContent
@@ -67,6 +70,17 @@ fun PokemonDetailScreen(navController: NavController, pokemonId: String) {
     val viewModel: PokemonDetailViewModel = koinViewModel(parameters = { parametersOf(pokemonId) })
     val uiState by viewModel.uiState.collectAsState()
 
+    // Al volver de editar, el formulario deja una marca para recargar el detalle.
+    val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
+    val updated by (savedStateHandle?.getStateFlow(POKEMON_UPDATED_KEY, false)
+        ?: kotlinx.coroutines.flow.MutableStateFlow(false)).collectAsState()
+    LaunchedEffect(updated) {
+        if (updated) {
+            viewModel.retry()
+            savedStateHandle?.set(POKEMON_UPDATED_KEY, false)
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -76,17 +90,25 @@ fun PokemonDetailScreen(navController: NavController, pokemonId: String) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
                 },
+                actions = {
+                    if ((uiState as? UiState.Success)?.data != null) {
+                        IconButton(onClick = { navController.navigate(Screen.EditPokemon.createScreen(pokemonId)) }) {
+                            Icon(Icons.Default.Edit, contentDescription = "Editar")
+                        }
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = PokeColors.PokeRed,
                     titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
+                    navigationIconContentColor = Color.White,
+                    actionIconContentColor = Color.White
                 )
             )
         }
     ) { innerPadding ->
         val contentModifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
             .padding(innerPadding)
 
         when (val state = uiState) {
@@ -145,7 +167,7 @@ private fun PokemonDetailContent(pokemon: Pokemon, modifier: Modifier = Modifier
                     modifier = Modifier
                         .size(140.dp)
                         .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.7f)),
+                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -171,7 +193,7 @@ private fun PokemonDetailContent(pokemon: Pokemon, modifier: Modifier = Modifier
                     if (pokemon.level > 0) add("Nivel ${pokemon.level}")
                 }.joinToString(" · ")
                 if (header.isNotEmpty()) {
-                    Text(header, style = MaterialTheme.typography.titleMedium, color = Color.Gray)
+                    Text(header, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
 
@@ -185,12 +207,12 @@ private fun PokemonDetailContent(pokemon: Pokemon, modifier: Modifier = Modifier
 
             if (pokemon.description.isNotBlank()) {
                 Card(
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF7F7F7)),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text("Notas del entrenador", style = MaterialTheme.typography.labelLarge, color = Color.Gray)
+                        Text("Notas del entrenador", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text(pokemon.description, style = MaterialTheme.typography.bodyMedium)
                     }
                 }
@@ -247,7 +269,7 @@ private fun DefenseSection(types: List<PokemonType>) {
         MatchupGroup("Débil a", profile.weaknesses)
         MatchupGroup("Resistente a", profile.resistances)
         if (profile.immunities.isNotEmpty()) {
-            Text("Inmune a", style = MaterialTheme.typography.labelLarge, color = Color.Gray)
+            Text("Inmune a", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -262,7 +284,7 @@ private fun DefenseSection(types: List<PokemonType>) {
 @Composable
 private fun MatchupGroup(title: String, matchups: List<TypeMatchup>) {
     if (matchups.isEmpty()) return
-    Text(title, style = MaterialTheme.typography.labelLarge, color = Color.Gray)
+    Text(title, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)

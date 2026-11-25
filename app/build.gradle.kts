@@ -1,6 +1,8 @@
+import com.google.firebase.crashlytics.buildtools.gradle.CrashlyticsExtension
+
 plugins {
-    // Comentado temporalmente hasta implementar el backend
     id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
@@ -14,19 +16,50 @@ android {
         applicationId = "org.ivan.pokmanager"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        // En la CI se pasan con -PversionCode=... -PversionName=... para que suban en cada publicación.
+        versionCode = providers.gradleProperty("versionCode").orNull?.toInt() ?: 1
+        versionName = providers.gradleProperty("versionName").orNull ?: "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // La clave de firma nunca está en el repositorio: llega por variables de entorno
+    // (en GitHub Actions, desde los secretos del repositorio).
+    val releaseKeystore = System.getenv("ANDROID_KEYSTORE_PATH")?.let { file(it) }?.takeIf { it.exists() }
+    signingConfigs {
+        if (releaseKeystore != null) {
+            create("release") {
+                storeFile = releaseKeystore
+                storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
+        debug {
+            // Tráfico HTTP solo en depuración (emuladores de Firebase en local); sin Crashlytics.
+            manifestPlaceholders["usesCleartextTraffic"] = "true"
+            manifestPlaceholders["crashlyticsEnabled"] = "false"
+        }
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            manifestPlaceholders["usesCleartextTraffic"] = "false"
+            manifestPlaceholders["crashlyticsEnabled"] = "true"
+            // Sin clave de publicación se firma con la de depuración: sirve para instalar y probar
+            // la versión optimizada, no para subirla a Google Play.
+            signingConfig = if (releaseKeystore != null) signingConfigs.getByName("release")
+            else signingConfigs.getByName("debug")
+            configure<CrashlyticsExtension> {
+                // Subir el mapping de R8 solo cuando se publica (necesita acceso a Firebase).
+                mappingFileUploadEnabled = System.getenv("CRASHLYTICS_UPLOAD_MAPPING") == "true"
+            }
         }
     }
     compileOptions {
@@ -69,6 +102,7 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.coilCompose)
     implementation(libs.firebase.auth)
+    implementation(libs.firebase.crashlytics)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.robolectric)

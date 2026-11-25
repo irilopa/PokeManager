@@ -6,6 +6,9 @@
 
 **Gestiona tu colección de Pokémon desde Android: regístralos, consulta su ficha y conoce sus debilidades.**
 
+**Español** · [English](README.en.md)
+
+[![CI](https://github.com/irilopa/PokeManager/actions/workflows/ci.yml/badge.svg)](https://github.com/irilopa/PokeManager/actions/workflows/ci.yml)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0.21-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org/)
 [![Android](https://img.shields.io/badge/Android-API%2026%2B-3DDC84?logo=android&logoColor=white)](https://developer.android.com/)
 [![Jetpack Compose](https://img.shields.io/badge/UI-Jetpack%20Compose-4285F4?logo=jetpackcompose&logoColor=white)](https://developer.android.com/compose)
@@ -30,6 +33,7 @@
 - [Estructura del proyecto](#estructura-del-proyecto)
 - [Hoja de ruta](#hoja-de-ruta)
 - [Contribuir](#contribuir)
+- [Autor](#autor)
 - [Licencia](#licencia)
 - [Aviso legal](#aviso-legal)
 
@@ -41,6 +45,7 @@
 - **Búsqueda y filtros**: búsqueda por nombre (sin distinguir mayúsculas ni tildes) combinable con un filtro por cualquiera de los 18 tipos.
 - **Ficha detallada**: imagen oficial, tipos, nivel, notas del entrenador, estadísticas base con barras y total.
 - **Debilidades y resistencias**: calculadas con la tabla de tipos (Gen 6+), incluidos los Pokémon de doble tipo (×4, ×2, ×½, ×¼ e inmunidades).
+- **Modo claro y oscuro**: colores de la marca con contraste WCAG AA en los dos.
 - **Estados claros**: indicadores de carga, mensajes de error con «Reintentar», pantalla de bienvenida cuando la colección está vacía y confirmación al guardar.
 
 ## Capturas
@@ -52,6 +57,10 @@
 | Búsqueda | Detalle | Debilidades |
 | :---: | :---: | :---: |
 | <img src="docs/screenshots/busqueda.png" alt="Búsqueda por nombre en la colección" width="230"> | <img src="docs/screenshots/detalle.png" alt="Detalle de Charizard con tipos y estadísticas" width="230"> | <img src="docs/screenshots/debilidades.png" alt="Debilidades, resistencias e inmunidades de Charizard" width="230"> |
+
+| Modo oscuro: colección | Modo oscuro: detalle |
+| :---: | :---: |
+| <img src="docs/screenshots/oscuro-coleccion.png" alt="Colección en modo oscuro" width="230"> | <img src="docs/screenshots/oscuro-detalle.png" alt="Detalle de Charizard en modo oscuro" width="230"> |
 
 <details>
 <summary><strong>Ver demo animada</strong></summary>
@@ -126,6 +135,10 @@ data          →  implementaciones con Firebase (Auth, Firestore) y PokéAPI (R
 
 La app no necesita variables de entorno ni claves adicionales: Firebase se configura con `google-services.json` y la PokéAPI es pública.
 
+### Publicación
+
+La versión de publicación se optimiza con R8 y envía los fallos a Firebase Crashlytics. En GitHub Actions, el job «Build de publicación» genera en cada ejecución un APK para probar en un móvil y, si están configurados los secretos `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` y `ANDROID_KEY_PASSWORD`, el AAB firmado para Google Play. La clave de firma nunca se guarda en el repositorio.
+
 ## Pruebas
 
 | Tipo | Qué cubre | Comando |
@@ -133,6 +146,8 @@ La app no necesita variables de entorno ni claves adicionales: Firebase se confi
 | Unitarias | Validación, tabla de tipos, filtros y ViewModels con repositorios falsos | `./gradlew testDebugUnitTest` |
 | Extremo a extremo | Registro, login, colección, búsqueda, detalle y cierre de sesión con el SDK real de Firebase | ver abajo |
 | Capturas del README | Genera las imágenes de `docs/screenshots/` con una colección de ejemplo | ver abajo |
+
+Cada push a `master` y cada pull request ejecutan la compilación y **toda la suite, incluidas las pruebas E2E contra Firebase Emulator Suite**, en [GitHub Actions](https://github.com/irilopa/PokeManager/actions/workflows/ci.yml). El informe de tests, las capturas y el APK de depuración quedan como artefactos de cada ejecución.
 
 Las pruebas E2E y de capturas usan Robolectric contra **Firebase Emulator Suite**, sin tocar ningún proyecto real. Si los emuladores no están arrancados, se omiten y la suite unitaria sigue en verde.
 
@@ -146,19 +161,21 @@ firebase emulators:exec --only auth,firestore --project pokemanager-6113d \
   "./gradlew testDebugUnitTest --tests '*ReadmeScreenshotsTest*'"
 ```
 
-Las capturas se guardan en `app/build/e2e-screenshots/` y `app/build/readme-screenshots/`.
+Las capturas se guardan en `app/build/e2e-screenshots/`, `app/build/readme-screenshots/` y, en modo oscuro, `app/build/readme-screenshots-dark/`.
 
 ## Datos y seguridad
 
 Los datos de cada usuario viven bajo su `uid`:
 
 ```text
-users/{uid}                    perfil: nombre, email, fecha de nacimiento
+users/{uid}                    perfil: nombre y email
 users/{uid}/pokemon/{docId}    Pokémon: nombre, nº de Pokédex, tipos, nivel,
                                notas, estadísticas base e imagen
 ```
 
-Las reglas de [`firestore.rules`](firestore.rules) solo permiten leer y escribir estos documentos al usuario autenticado propietario; cualquier otro acceso se deniega.
+Las reglas de [`firestore.rules`](firestore.rules) solo permiten leer y escribir estos documentos al usuario autenticado propietario; cualquier otro acceso se deniega. Además validan cada escritura con los mismos límites que el formulario (campos permitidos, tipos, nivel 1–100, longitudes y stats 0–255), así que no se pueden guardar datos inválidos aunque alguien se salte la app. `FirestoreRulesEmulatorTest` lo comprueba contra el emulador en la CI.
+
+Qué datos se recogen, para qué y cómo borrarlos se explica en la [política de privacidad](docs/privacy.md).
 
 ## Estructura del proyecto
 
@@ -200,7 +217,19 @@ Las contribuciones son bienvenidas:
 2. Añade o actualiza los tests correspondientes y comprueba que `./gradlew testDebugUnitTest` pasa.
 3. Abre un pull request describiendo el cambio y, si afecta a la interfaz, incluye capturas.
 
-Para errores o propuestas, abre un [issue](https://github.com/irilopa/PokeManager/issues).
+El README existe en español (este archivo) y en inglés ([README.en.md](README.en.md)). La versión en español es la fuente: al fusionar un cambio en `master`, el workflow `README translate` traduce las diferencias con la API de Claude y abre un pull request con `README.en.md` actualizado. La comprobación `README sync` verifica que ambas versiones mantienen la misma estructura.
+
+Para errores o propuestas, abre un [issue](https://github.com/irilopa/PokeManager/issues). Los bugs corregidos, con su causa y el test que evita que vuelvan, están en el [historial de bugs](docs/bugs.md).
+
+## Autor
+
+**Ivan Lopez Rilopa** · Desarrollador Android
+
+Diseño, arquitectura y desarrollo de PokéManager: app nativa en Kotlin con Jetpack Compose, backend en Firebase y pruebas automatizadas de extremo a extremo.
+
+[![GitHub](https://img.shields.io/badge/GitHub-irilopa-181717?logo=github)](https://github.com/irilopa)
+
+¿Tienes una oportunidad o sugerencia? Abre un [issue](https://github.com/irilopa/PokeManager/issues) o contáctame a través de mi perfil de GitHub.
 
 ## Licencia
 

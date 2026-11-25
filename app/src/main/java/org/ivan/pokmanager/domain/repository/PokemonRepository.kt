@@ -16,6 +16,12 @@ interface PokemonRepository {
     /** Guarda un Pokemon nuevo. */
     suspend fun save(uid: String, pokemon: Pokemon): Result<Unit>
 
+    /** Sobrescribe un Pokemon existente (identificado por su id). */
+    suspend fun update(uid: String, pokemon: Pokemon): Result<Unit>
+
     /** Elimina un Pokemon por el id de su documento. */
     suspend fun delete(uid: String, id: String): Result<Unit>
+
+    /** Elimina todos los Pokemon del usuario. */
+    suspend fun deleteAll(uid: String): Result<Unit>
 }
