@@ -1,11 +1,70 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Cada usuario solo puede leer y escribir su propio perfil y su equipo.
+
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    function isText(value, minLength, maxLength) {
+      return value is string && value.size() >= minLength && value.size() <= maxLength;
+    }
+
+    function isIntBetween(value, min, max) {
+      return value is int && value >= min && value <= max;
+    }
+
+    function isNumberBetween(value, min, max) {
+      return value is number && value >= min && value <= max;
+    }
+
+    // Perfil: solo nombre y email (la app no guarda más datos personales).
+    function isValidProfile(data) {
+      return data.keys().hasOnly(['name', 'email'])
+        && data.keys().hasAll(['name', 'email'])
+        && isText(data.name, 1, 50)
+        && isText(data.email, 3, 254);
+    }
+
+    function isValidStats(stats) {
+      return stats is map
+        && stats.keys().hasOnly(['hp', 'attack', 'defense', 'specialAttack', 'specialDefense', 'speed'])
+        && stats.keys().hasAll(['hp', 'attack', 'defense', 'specialAttack', 'specialDefense', 'speed'])
+        && isIntBetween(stats.hp, 0, 255)
+        && isIntBetween(stats.attack, 0, 255)
+        && isIntBetween(stats.defense, 0, 255)
+        && isIntBetween(stats.specialAttack, 0, 255)
+        && isIntBetween(stats.specialDefense, 0, 255)
+        && isIntBetween(stats.speed, 0, 255);
+    }
+
+    // Mismos límites que el formulario de la app (PokemonFormValidator).
+    function isValidPokemon(data) {
+      return data.keys().hasOnly([
+          'pokedexNumber', 'name', 'types', 'level', 'description',
+          'heightM', 'weightKg', 'stats', 'imageUrl', 'moves'
+        ])
+        && data.keys().hasAll(['pokedexNumber', 'name', 'types', 'level', 'stats'])
+        && isText(data.name, 1, 30)
+        && isText(data.types, 1, 40)
+        && isIntBetween(data.level, 1, 100)
+        && isIntBetween(data.pokedexNumber, 0, 2000)
+        && isValidStats(data.stats)
+        && isText(data.get('description', ''), 0, 200)
+        && isText(data.get('imageUrl', ''), 0, 300)
+        && isNumberBetween(data.get('heightM', 0), 0, 1000)
+        && isNumberBetween(data.get('weightKg', 0), 0, 10000)
+        && data.get('moves', []) is list
+        && data.get('moves', []).size() <= 20;
+    }
+
     match /users/{uid} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid) && isValidProfile(request.resource.data);
+
       match /pokemon/{pokemonId} {
-        allow read, write: if request.auth != null && request.auth.uid == uid;
+        allow read, delete: if isOwner(uid);
+        allow create, update: if isOwner(uid) && isValidPokemon(request.resource.data);
       }
     }
   }

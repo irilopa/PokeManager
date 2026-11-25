@@ -164,7 +164,7 @@ users/{uid}/pokemon/{docId}    Pokémon: nombre, nº de Pokédex, tipos, nivel,
                                notas, estadísticas base e imagen
 ```
 
-Las reglas de [`firestore.rules`](firestore.rules) solo permiten leer y escribir estos documentos al usuario autenticado propietario; cualquier otro acceso se deniega.
+Las reglas de [`firestore.rules`](firestore.rules) solo permiten leer y escribir estos documentos al usuario autenticado propietario; cualquier otro acceso se deniega. Además validan cada escritura con los mismos límites que el formulario (campos permitidos, tipos, nivel 1–100, longitudes y stats 0–255), así que no se pueden guardar datos inválidos aunque alguien se salte la app. `FirestoreRulesEmulatorTest` lo comprueba contra el emulador en la CI.
 
 Qué datos se recogen, para qué y cómo borrarlos se explica en la [política de privacidad](docs/privacy.md).
 

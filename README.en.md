@@ -164,7 +164,7 @@ users/{uid}/pokemon/{docId}    Pokémon: name, Pokédex number, types, level,
                                notes, base stats and image
 ```
 
-The rules in [`firestore.rules`](firestore.rules) only allow the authenticated owner to read and write these documents; any other access is denied.
+The rules in [`firestore.rules`](firestore.rules) only allow the authenticated owner to read and write these documents; any other access is denied. They also validate every write with the same limits as the form (allowed fields, types, level 1–100, lengths and stats 0–255), so invalid data cannot be stored even by bypassing the app. `FirestoreRulesEmulatorTest` checks this against the emulator in CI.
 
 What data is collected, why, and how to delete it is explained in the [privacy policy](docs/privacy.md) (in Spanish).
 
