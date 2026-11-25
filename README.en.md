@@ -219,7 +219,7 @@ Contributions are welcome:
 
 The README exists in Spanish ([README.md](README.md)) and English (this file). The Spanish version is the source: when a change is merged into `master`, the `README translate` workflow translates the differences with the Claude API and opens a pull request with the updated `README.en.md`. The `README sync` check verifies that both versions keep the same structure.
 
-For bugs or ideas, open an [issue](https://github.com/irilopa/PokeManager/issues).
+For bugs or ideas, open an [issue](https://github.com/irilopa/PokeManager/issues). Fixed bugs, with their cause and the test that prevents them from returning, are listed in the [bug history](docs/bugs.md) (in Spanish).
 
 ## Author
 
