@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import org.ivan.pokmanager.presentation.ui.screens.AddPokemonScreen
+import org.ivan.pokmanager.presentation.ui.screens.DeleteAccountScreen
 import org.ivan.pokmanager.presentation.ui.screens.LoginScreen
 import org.ivan.pokmanager.presentation.ui.screens.PokemonDetailScreen
 import org.ivan.pokmanager.presentation.ui.screens.PokemonListScreen
@@ -28,6 +29,9 @@ fun NavGraph(navController: NavHostController, isLoggedIn: Boolean) {
         }
         composable(Screen.AddPokemon.route) {
             AddPokemonScreen(navController)
+        }
+        composable(Screen.DeleteAccount.route) {
+            DeleteAccountScreen(navController)
         }
         composable(Screen.PokemonDetail.route) { backStackEntry ->
             val pokemonId = backStackEntry.arguments?.getString("pokemonId").orEmpty()

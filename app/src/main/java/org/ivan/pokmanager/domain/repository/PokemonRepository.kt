@@ -18,4 +18,7 @@ interface PokemonRepository {
 
     /** Elimina un Pokemon por el id de su documento. */
     suspend fun delete(uid: String, id: String): Result<Unit>
+
+    /** Elimina todos los Pokemon del usuario. */
+    suspend fun deleteAll(uid: String): Result<Unit>
 }

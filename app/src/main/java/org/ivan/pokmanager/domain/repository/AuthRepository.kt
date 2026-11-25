@@ -15,4 +15,10 @@ interface AuthRepository {
 
     /** Uid del usuario autenticado, o null si no hay sesion. */
     fun currentUserId(): String?
+
+    /** Vuelve a comprobar la contrasena del usuario actual (necesario antes de operaciones sensibles). */
+    suspend fun reauthenticate(password: String): Result<Unit>
+
+    /** Borra la cuenta del usuario actual. Requiere una autenticacion reciente. */
+    suspend fun deleteAccount(): Result<Unit>
 }

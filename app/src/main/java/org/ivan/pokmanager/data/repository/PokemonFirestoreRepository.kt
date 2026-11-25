@@ -50,4 +50,18 @@ class PokemonFirestoreRepository(
         userPokemonCollection(uid).document(id).delete().await()
         Unit
     }
+
+    override suspend fun deleteAll(uid: String): Result<Unit> = runCatching {
+        // Firestore no borra subcolecciones en cascada: se borran los documentos por lotes.
+        val documents = userPokemonCollection(uid).get().await().documents
+        documents.chunked(MAX_BATCH_SIZE).forEach { chunk ->
+            val batch = firestore.batch()
+            chunk.forEach { batch.delete(it.reference) }
+            batch.commit().await()
+        }
+    }
+
+    private companion object {
+        const val MAX_BATCH_SIZE = 500
+    }
 }

@@ -84,6 +84,13 @@ fun PokemonListScreen(
     val visiblePokemons by viewModel.visiblePokemons.collectAsState()
     val query by viewModel.query.collectAsState()
     val typeFilter by viewModel.typeFilter.collectAsState()
+    val goToLogin = {
+        navController.navigate(Screen.Login.route) {
+            // Vacia toda la pila para que «Atras» no vuelva al equipo.
+            popUpTo(navController.graph.id) { inclusive = true }
+            launchSingleTop = true
+        }
+    }
     val deleteError by viewModel.deleteError.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val primaryColor = PokeColors.PokeRed
@@ -103,12 +110,9 @@ fun PokemonListScreen(
                 onAddPokemon = goToAddPokemon,
                 onLogout = {
                     viewModel.logout()
-                    navController.navigate(Screen.Login.route) {
-                        // Vacia toda la pila para que «Atras» no vuelva al equipo.
-                        popUpTo(navController.graph.id) { inclusive = true }
-                        launchSingleTop = true
-                    }
-                }
+                    goToLogin()
+                },
+                onDeleteAccount = { navController.navigate(Screen.DeleteAccount.route) }
             )
         },
         floatingActionButton = {

@@ -13,6 +13,8 @@ sealed class Screen(val route: String) {
 
     data object AddPokemon : Screen("addPokemon")
 
+    data object DeleteAccount : Screen("deleteAccount")
+
     data object PokemonDetail : Screen("pokemonDetail/{pokemonId}") {
         /**
          * Construye la ruta de detalle con el id del documento de Firestore.

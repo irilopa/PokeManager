@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PrivacyTip
 import androidx.compose.material3.DropdownMenu
@@ -11,6 +12,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -39,6 +41,7 @@ fun ActionMenu(
     onBack: () -> Unit = {},
     onAddPokemon: () -> Unit,
     onLogout: () -> Unit,
+    onDeleteAccount: () -> Unit,
     containerColor: Color = PokeColors.PokeRed
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -84,6 +87,17 @@ fun ActionMenu(
                     onClick = {
                         expanded = false
                         onLogout()
+                    }
+                )
+
+                DropdownMenuItem(
+                    text = { Text("Eliminar cuenta", color = MaterialTheme.colorScheme.error) },
+                    leadingIcon = {
+                        Icon(Icons.Filled.DeleteForever, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                    },
+                    onClick = {
+                        expanded = false
+                        onDeleteAccount()
                     }
                 )
             }
