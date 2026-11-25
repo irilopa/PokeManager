@@ -13,11 +13,14 @@ import org.ivan.pokmanager.domain.model.Pokemon
 import org.ivan.pokmanager.domain.model.PokemonStats
 import org.ivan.pokmanager.domain.repository.AuthRepository
 import org.ivan.pokmanager.domain.type.PokemonType
+import org.ivan.pokmanager.domain.usecase.GetPokemonByIdUseCase
 import org.ivan.pokmanager.domain.usecase.SavePokemonUseCase
+import org.ivan.pokmanager.domain.usecase.UpdatePokemonUseCase
 import org.ivan.pokmanager.domain.validation.PokemonField
 import org.ivan.pokmanager.domain.validation.PokemonForm
 import org.ivan.pokmanager.domain.validation.PokemonFormValidator
 import org.ivan.pokmanager.presentation.state.SaveState
+import org.ivan.pokmanager.presentation.state.UiState
 
 /**
  * Administra el formulario de alta de Pokemon, su validacion, el guardado y la consulta a la PokeAPI.
@@ -25,8 +28,24 @@ import org.ivan.pokmanager.presentation.state.SaveState
 class AddPokemonScreenViewModel(
     private val savePokemonUseCase: SavePokemonUseCase,
     private val pokemonApiService: PokemonApiService,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val getPokemonByIdUseCase: GetPokemonByIdUseCase,
+    private val updatePokemonUseCase: UpdatePokemonUseCase,
+    /** Id del documento a editar; vacio para crear un Pokemon nuevo. */
+    private val pokemonId: String = ""
 ) : ViewModel() {
+
+    /** True si el formulario edita un Pokemon existente. */
+    val isEditing: Boolean = pokemonId.isNotBlank()
+
+    /** Pokemon original en modo edicion; se conservan los campos que el formulario no muestra. */
+    private var original: Pokemon? = null
+
+    private val _loadState = MutableStateFlow<UiState<Unit>>(
+        if (isEditing) UiState.Loading else UiState.Success(Unit)
+    )
+    /** Carga del Pokemon a editar (siempre Success al crear uno nuevo). */
+    val loadState: StateFlow<UiState<Unit>> = _loadState.asStateFlow()
 
     private val _form = MutableStateFlow(PokemonForm())
     private val _hp = MutableStateFlow("")
@@ -55,8 +74,55 @@ class AddPokemonScreenViewModel(
     /** Lista de tipos disponibles para la UI. */
     val pokemonTypes: List<String> = PokemonType.entries.map { it.spanishName }
 
+    init {
+        if (isEditing) loadExisting()
+    }
+
+    /** Vuelve a intentar cargar el Pokemon a editar. */
+    fun retryLoad() {
+        if (isEditing) loadExisting()
+    }
+
+    private fun loadExisting() {
+        val uid = authRepository.currentUserId()
+        if (uid == null) {
+            _loadState.value = UiState.Error(PokemonListViewModel.NO_SESSION_MESSAGE)
+            return
+        }
+        _loadState.value = UiState.Loading
+        viewModelScope.launch {
+            _loadState.value = getPokemonByIdUseCase(uid, pokemonId).fold(
+                onSuccess = { pokemon ->
+                    if (pokemon == null) {
+                        UiState.Error("Este Pokémon ya no está en tu equipo.")
+                    } else {
+                        fillForm(pokemon)
+                        UiState.Success(Unit)
+                    }
+                },
+                onFailure = { UiState.Error(PokemonDetailViewModel.LOAD_ERROR_MESSAGE) }
+            )
+        }
+    }
+
+    private fun fillForm(pokemon: Pokemon) {
+        original = pokemon
+        fetchedStats = pokemon.stats
+        val types = pokemon.types.split("/").map { it.trim() }.filter { it.isNotEmpty() }
+        _form.value = PokemonForm(
+            name = pokemon.name,
+            pokedexNumber = pokemon.pokedexNumber.takeIf { it > 0 }?.toString().orEmpty(),
+            primaryType = types.getOrElse(0) { "" },
+            secondaryType = types.getOrElse(1) { "" },
+            level = pokemon.level.takeIf { it > 0 }?.toString().orEmpty(),
+            notes = pokemon.description
+        )
+        _hp.value = pokemon.stats.hp.toString()
+        _attack.value = pokemon.stats.attack.toString()
+    }
+
     fun setName(value: String) {
-        if (value != _form.value.name) fetchedStats = null
+        if (value != _form.value.name && !isEditing) fetchedStats = null
         updateForm(PokemonField.NAME) { it.copy(name = value) }
     }
 
@@ -172,7 +238,7 @@ class AddPokemonScreenViewModel(
         val stats = fetchedStats?.copy(hp = hp, attack = attack)
             ?: PokemonStats(hp = hp, attack = attack)
 
-        val pokemon = Pokemon(
+        val pokemon = (original ?: Pokemon()).copy(
             pokedexNumber = pokedexNumber,
             name = form.name.trim(),
             types = buildTypes(form),
@@ -183,7 +249,8 @@ class AddPokemonScreenViewModel(
         )
 
         viewModelScope.launch {
-            _saveState.value = savePokemonUseCase(uid, pokemon).fold(
+            val result = if (isEditing) updatePokemonUseCase(uid, pokemon) else savePokemonUseCase(uid, pokemon)
+            _saveState.value = result.fold(
                 onSuccess = { SaveState.Success },
                 onFailure = { SaveState.Error(SAVE_ERROR_MESSAGE) }
             )

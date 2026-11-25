@@ -58,10 +58,14 @@ import androidx.navigation.compose.rememberNavController
 import org.ivan.pokmanager.domain.validation.PokemonField
 import org.ivan.pokmanager.domain.validation.PokemonFormValidator
 import org.ivan.pokmanager.presentation.state.SaveState
+import org.ivan.pokmanager.presentation.state.UiState
+import org.ivan.pokmanager.presentation.ui.components.ErrorContent
+import org.ivan.pokmanager.presentation.ui.components.LoadingContent
 import org.ivan.pokmanager.presentation.ui.components.PokemonDropdown
 import org.ivan.pokmanager.presentation.ui.theme.PokeColors
 import org.ivan.pokmanager.presentation.viewmodel.AddPokemonScreenViewModel
 import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 /**
  * Pantalla para registrar un Pokemon y autocompletar datos desde la PokeAPI.
@@ -70,9 +74,11 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun AddPokemonScreen(
     navController: NavController,
+    pokemonId: String = "",
     viewModel: AddPokemonScreenViewModel? = null
 ) {
-    val vm: AddPokemonScreenViewModel = viewModel ?: koinViewModel()
+    val vm: AddPokemonScreenViewModel = viewModel ?: koinViewModel(parameters = { parametersOf(pokemonId) })
+    val loadState by vm.loadState.collectAsState()
 
     val form by vm.form.collectAsState()
     val hp by vm.hp.collectAsState()
@@ -101,7 +107,13 @@ fun AddPokemonScreen(
     // Solo se vuelve a la lista cuando Firestore confirma el guardado.
     LaunchedEffect(saveState) {
         when (val state = saveState) {
-            SaveState.Success -> navController.navigateUp()
+            SaveState.Success -> {
+                if (vm.isEditing) {
+                    // Avisa al detalle de que debe recargar los datos.
+                    navController.previousBackStackEntry?.savedStateHandle?.set(POKEMON_UPDATED_KEY, true)
+                }
+                navController.navigateUp()
+            }
             is SaveState.Error -> snackbarHostState.showSnackbar(state.message)
             else -> Unit
         }
@@ -111,7 +123,7 @@ fun AddPokemonScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Registrar Pokémon") },
+                title = { Text(if (vm.isEditing) "Editar Pokémon" else "Registrar Pokémon") },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
@@ -125,6 +137,17 @@ fun AddPokemonScreen(
             )
         }
     ) { innerPadding ->
+        when (val state = loadState) {
+            UiState.Loading -> {
+                LoadingContent(Modifier.padding(innerPadding))
+                return@Scaffold
+            }
+            is UiState.Error -> {
+                ErrorContent(state.message, onRetry = vm::retryLoad, modifier = Modifier.padding(innerPadding))
+                return@Scaffold
+            }
+            is UiState.Success -> Unit
+        }
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -143,7 +166,7 @@ fun AddPokemonScreen(
                 tint = primaryColor
             )
             Text(
-                text = "¡Añade un nuevo Pokémon a tu equipo!",
+                text = if (vm.isEditing) "Actualiza los datos de tu Pokémon" else "¡Añade un nuevo Pokémon a tu equipo!",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = PokeColors.PokeDarkGray
@@ -363,7 +386,7 @@ fun AddPokemonScreen(
                     Spacer(modifier = Modifier.size(12.dp))
                     Text("Guardando…", fontSize = 18.sp)
                 } else {
-                    Text("Guardar Pokémon", fontSize = 18.sp)
+                    Text(if (vm.isEditing) "Guardar cambios" else "Guardar Pokémon", fontSize = 18.sp)
                 }
             }
         }
@@ -377,3 +400,6 @@ fun AddPokemonScreen(
 fun AddPokemonScreenPreview() {
     AddPokemonScreen(navController = rememberNavController())
 }
+
+/** Clave del savedStateHandle con la que el formulario avisa al detalle de que hubo cambios. */
+const val POKEMON_UPDATED_KEY = "pokemon_updated"

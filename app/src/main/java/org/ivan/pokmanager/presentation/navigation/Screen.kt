@@ -17,6 +17,10 @@ sealed class Screen(val route: String) {
 
     data object DeleteAccount : Screen("deleteAccount")
 
+    data object EditPokemon : Screen("editPokemon/{pokemonId}") {
+        fun createScreen(pokemonId: String) = "editPokemon/$pokemonId"
+    }
+
     data object PokemonDetail : Screen("pokemonDetail/{pokemonId}") {
         /**
          * Construye la ruta de detalle con el id del documento de Firestore.

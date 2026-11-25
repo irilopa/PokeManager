@@ -56,6 +56,18 @@ class FakePokemonRepository : PokemonRepository {
         return Result.success(Unit)
     }
 
+    var failUpdate = false
+    var updateCalls = 0
+        private set
+
+    override suspend fun update(uid: String, pokemon: Pokemon): Result<Unit> {
+        updateCalls++
+        if (failUpdate) return Result.failure(IllegalStateException("permission denied"))
+        val current = data.value.orEmpty()
+        data.value = current + (uid to current[uid].orEmpty().map { if (it.id == pokemon.id) pokemon else it })
+        return Result.success(Unit)
+    }
+
     override suspend fun delete(uid: String, id: String): Result<Unit> {
         val current = data.value.orEmpty()
         data.value = current + (uid to current[uid].orEmpty().filterNot { it.id == id })

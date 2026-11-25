@@ -310,4 +310,35 @@ class AppFlowEmulatorTest {
         compose.onNodeWithText("Enviar enlace").performClick()
         compose.waitForText("Volver a iniciar sesión")
     }
+
+    @Test
+    fun editar_un_pokemon_actualiza_el_mismo_documento() {
+        val email = "gary${System.currentTimeMillis()}@test.com"
+        register(email, FirebaseEmulators.randomCredential())
+        compose.onNodeWithText("Añadir mi primer Pokémon").performClick()
+        compose.waitForText("Guardar Pokémon")
+        addPokemon("Pikachu", "5", notes = "Recién capturado")
+        compose.waitForText("Nv. 5 · Eléctrico")
+        val uid = requireNotNull(FirebaseAuth.getInstance().currentUser).uid
+
+        compose.onNodeWithText("Nv. 5 · Eléctrico").performClick()
+        compose.waitForText("Nivel 5")
+        compose.onNodeWithContentDescription("Editar").performClick()
+        compose.waitForText("Guardar cambios")
+        compose.onNodeWithText("Pikachu").assertExists()
+        shot("13_editar_pokemon")
+
+        compose.onNodeWithText("Nivel").performScrollTo().performTextClearance()
+        type("Nivel", "12")
+        compose.onNodeWithText("Notas adicionales").performScrollTo().performTextClearance()
+        type("Notas adicionales", "Ya ha subido de nivel")
+        compose.onNodeWithText("Guardar cambios").performScrollTo().performClick()
+
+        // Vuelve al detalle, que muestra los datos nuevos
+        compose.waitForText("Nivel 12")
+        assertTrue(hasNode("Ya ha subido de nivel"))
+        assertEquals(1, countDocuments("users/$uid/pokemon"))
+        compose.onNodeWithContentDescription("Volver").performClick()
+        compose.waitForText("Nv. 12 · Eléctrico")
+    }
 }

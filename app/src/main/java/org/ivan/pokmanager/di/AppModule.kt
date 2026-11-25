@@ -13,6 +13,7 @@ import org.ivan.pokmanager.domain.usecase.DeletePokemonUseCase
 import org.ivan.pokmanager.domain.usecase.GetPokemonByIdUseCase
 import org.ivan.pokmanager.domain.usecase.GetPokemonUseCase
 import org.ivan.pokmanager.domain.usecase.SavePokemonUseCase
+import org.ivan.pokmanager.domain.usecase.UpdatePokemonUseCase
 import org.ivan.pokmanager.presentation.viewmodel.AddPokemonScreenViewModel
 import org.ivan.pokmanager.presentation.viewmodel.DeleteAccountViewModel
 import org.ivan.pokmanager.presentation.viewmodel.ForgotPasswordViewModel
@@ -38,9 +39,10 @@ val appModule = module {
     factory { GetPokemonByIdUseCase(get()) }
     factory { DeletePokemonUseCase(get()) }
     factory { SavePokemonUseCase(get()) }
+    factory { UpdatePokemonUseCase(get()) }
     factory { DeleteAccountUseCase(get(), get(), get()) }
 
-    viewModel { AddPokemonScreenViewModel(get(), get(), get()) }
+    viewModel { (pokemonId: String) -> AddPokemonScreenViewModel(get(), get(), get(), get(), get(), pokemonId) }
     viewModel { PokemonListViewModel(get(), get(), get()) }
     viewModel { DeleteAccountViewModel(get()) }
     viewModel { ForgotPasswordViewModel(get()) }

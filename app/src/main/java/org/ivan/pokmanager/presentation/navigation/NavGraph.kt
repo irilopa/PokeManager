@@ -34,6 +34,10 @@ fun NavGraph(navController: NavHostController, isLoggedIn: Boolean) {
         composable(Screen.AddPokemon.route) {
             AddPokemonScreen(navController)
         }
+        composable(Screen.EditPokemon.route) { backStackEntry ->
+            val pokemonId = backStackEntry.arguments?.getString("pokemonId").orEmpty()
+            AddPokemonScreen(navController, pokemonId = pokemonId)
+        }
         composable(Screen.DeleteAccount.route) {
             DeleteAccountScreen(navController)
         }

@@ -17,6 +17,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CatchingPokemon
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -30,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -46,6 +48,7 @@ import org.ivan.pokmanager.domain.model.PokemonStats
 import org.ivan.pokmanager.domain.type.PokemonType
 import org.ivan.pokmanager.domain.type.TypeChart
 import org.ivan.pokmanager.domain.type.TypeMatchup
+import org.ivan.pokmanager.presentation.navigation.Screen
 import org.ivan.pokmanager.presentation.state.UiState
 import org.ivan.pokmanager.presentation.ui.components.ErrorContent
 import org.ivan.pokmanager.presentation.ui.components.LoadingContent
@@ -67,6 +70,17 @@ fun PokemonDetailScreen(navController: NavController, pokemonId: String) {
     val viewModel: PokemonDetailViewModel = koinViewModel(parameters = { parametersOf(pokemonId) })
     val uiState by viewModel.uiState.collectAsState()
 
+    // Al volver de editar, el formulario deja una marca para recargar el detalle.
+    val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
+    val updated by (savedStateHandle?.getStateFlow(POKEMON_UPDATED_KEY, false)
+        ?: kotlinx.coroutines.flow.MutableStateFlow(false)).collectAsState()
+    LaunchedEffect(updated) {
+        if (updated) {
+            viewModel.retry()
+            savedStateHandle?.set(POKEMON_UPDATED_KEY, false)
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -76,10 +90,18 @@ fun PokemonDetailScreen(navController: NavController, pokemonId: String) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
                 },
+                actions = {
+                    if ((uiState as? UiState.Success)?.data != null) {
+                        IconButton(onClick = { navController.navigate(Screen.EditPokemon.createScreen(pokemonId)) }) {
+                            Icon(Icons.Default.Edit, contentDescription = "Editar")
+                        }
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = PokeColors.PokeRed,
                     titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
+                    navigationIconContentColor = Color.White,
+                    actionIconContentColor = Color.White
                 )
             )
         }

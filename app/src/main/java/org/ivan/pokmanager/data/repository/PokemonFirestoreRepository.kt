@@ -46,6 +46,12 @@ class PokemonFirestoreRepository(
         Unit
     }
 
+    override suspend fun update(uid: String, pokemon: Pokemon): Result<Unit> = runCatching {
+        // El campo @DocumentId no se escribe: el id es la ruta del documento.
+        userPokemonCollection(uid).document(pokemon.id).set(pokemon).await()
+        Unit
+    }
+
     override suspend fun delete(uid: String, id: String): Result<Unit> = runCatching {
         userPokemonCollection(uid).document(id).delete().await()
         Unit
