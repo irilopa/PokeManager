@@ -2,6 +2,7 @@ package org.ivan.pokmanager.viewmodel
 
 import kotlinx.coroutines.CompletableDeferred
 import org.ivan.pokmanager.MainDispatcherRule
+import org.ivan.pokmanager.data.model.remote.PokeApiErrors
 import org.ivan.pokmanager.data.model.remote.dto.PokemonResponse
 import org.ivan.pokmanager.data.model.remote.dto.StatNameDTO
 import org.ivan.pokmanager.data.model.remote.dto.StatResponseDTO
@@ -24,6 +25,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
+import java.net.UnknownHostException
 
 class AddPokemonScreenViewModelTest {
 
@@ -250,5 +252,41 @@ class AddPokemonScreenViewModelTest {
         assertEquals(SaveState.Error(AddPokemonScreenViewModel.SAVE_ERROR_MESSAGE), edit.saveState.value)
         assertEquals("41", edit.form.value.level)
         assertEquals(36, repo.pokemonsOf("user-1").single().level)
+    }
+
+    @Test
+    fun `buscar un nombre que no existe dice que no se encontro`() {
+        vm.setName("Pikachuu")
+        vm.fetchPokemonFromApi()
+
+        assertEquals(PokeApiErrors.NOT_FOUND, vm.apiError.value)
+        assertEquals(false, vm.isLoadingFromApi.value)
+    }
+
+    @Test
+    fun `sin conexion no dice que el nombre este mal`() {
+        api.failure = UnknownHostException("pokeapi.co")
+        vm.setName("Pikachu")
+        vm.fetchPokemonFromApi()
+
+        assertEquals(PokeApiErrors.NO_CONNECTION, vm.apiError.value)
+    }
+
+    @Test
+    fun `si la PokeAPI falla avisa de que no responde`() {
+        api.failure = FakePokemonApiService.httpError(500)
+        vm.setName("Pikachu")
+        vm.fetchPokemonFromApi()
+
+        assertEquals(PokeApiErrors.SERVER, vm.apiError.value)
+    }
+
+    @Test
+    fun `busca con el nombre normalizado`() {
+        vm.setName("  PIKACHU ")
+        vm.fetchPokemonFromApi()
+
+        assertEquals(listOf("pikachu"), api.queries)
+        assertEquals("25", vm.form.value.pokedexNumber)
     }
 }

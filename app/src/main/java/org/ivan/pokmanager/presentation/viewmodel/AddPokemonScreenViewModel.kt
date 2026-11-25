@@ -6,7 +6,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.ivan.pokmanager.data.model.remote.PokeApiErrors
 import org.ivan.pokmanager.data.model.remote.dto.toPokemonStats
+import org.ivan.pokmanager.data.model.remote.toPokeApiName
 import org.ivan.pokmanager.data.model.remote.dto.toSpanish
 import org.ivan.pokmanager.data.model.repository.PokemonApiService
 import org.ivan.pokmanager.domain.model.Pokemon
@@ -167,7 +169,7 @@ class AddPokemonScreenViewModel(
 
     /** Busca el Pokemon por nombre en la PokeAPI y autocompleta los campos principales. */
     fun fetchPokemonFromApi() {
-        val query = _form.value.name.trim().lowercase()
+        val query = toPokeApiName(_form.value.name)
         if (query.isBlank()) return
 
         _isLoadingFromApi.value = true
@@ -195,8 +197,8 @@ class AddPokemonScreenViewModel(
                     )
                     _apiSuccess.value = true
                 }
-                .onFailure {
-                    _apiError.value = "Pokémon no encontrado. Revisa el nombre."
+                .onFailure { error ->
+                    _apiError.value = PokeApiErrors.messageFor(error)
                 }
 
             _isLoadingFromApi.value = false
