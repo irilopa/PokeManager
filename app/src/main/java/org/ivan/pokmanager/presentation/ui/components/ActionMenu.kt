@@ -5,6 +5,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.PrivacyTip
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -20,6 +21,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalUriHandler
+import org.ivan.pokmanager.presentation.AppLinks
 import org.ivan.pokmanager.presentation.ui.theme.PokeColors
 
 /**
@@ -39,6 +42,7 @@ fun ActionMenu(
     containerColor: Color = PokeColors.PokeRed
 ) {
     var expanded by remember { mutableStateOf(false) }
+    val uriHandler = LocalUriHandler.current
 
     TopAppBar(
         title = { Text(title) },
@@ -62,6 +66,15 @@ fun ActionMenu(
                     onClick = {
                         expanded = false
                         onAddPokemon()
+                    }
+                )
+
+                DropdownMenuItem(
+                    text = { Text("Política de privacidad") },
+                    leadingIcon = { Icon(Icons.Filled.PrivacyTip, contentDescription = null) },
+                    onClick = {
+                        expanded = false
+                        uriHandler.openUri(AppLinks.PRIVACY_POLICY)
                     }
                 )
 

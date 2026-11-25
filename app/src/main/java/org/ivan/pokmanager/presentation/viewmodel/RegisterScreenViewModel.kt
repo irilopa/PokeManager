@@ -21,7 +21,6 @@ class RegisterScreenViewModel(
 
     private val _name = MutableStateFlow("")
     private val _email = MutableStateFlow("")
-    private val _birthdate = MutableStateFlow("")
     private val _password = MutableStateFlow("")
 
     private val _isLoading = MutableStateFlow(false)
@@ -32,8 +31,6 @@ class RegisterScreenViewModel(
     val name: StateFlow<String> = _name.asStateFlow()
     /** Email ingresado por el usuario. */
     val email: StateFlow<String> = _email.asStateFlow()
-    /** Fecha de nacimiento ingresada por el usuario. */
-    val birthdate: StateFlow<String> = _birthdate.asStateFlow()
     /** Contrasena ingresada por el usuario. */
     val password: StateFlow<String> = _password.asStateFlow()
     /** Indica si el registro esta en curso. */
@@ -45,7 +42,6 @@ class RegisterScreenViewModel(
 
     fun setName(name: String) { _name.value = name }
     fun setEmail(email: String) { _email.value = email }
-    fun setBirthdate(birthdate: String) { _birthdate.value = birthdate }
     fun setPassword(password: String) { _password.value = password }
     /** Limpia el mensaje mostrado por la UI. */
     fun clearMessage() { _message.value = null }
@@ -57,7 +53,6 @@ class RegisterScreenViewModel(
         val currentEmail = _email.value.trim()
         val currentPassword = _password.value
         val currentName = _name.value.trim()
-        val currentBirthdate = _birthdate.value.trim()
 
         _isLoading.value = true
         _message.value = null
@@ -69,8 +64,7 @@ class RegisterScreenViewModel(
                 .onSuccess { uid ->
                     val userDto = UserDto(
                         name = currentName,
-                        email = currentEmail,
-                        birthDay = currentBirthdate
+                        email = currentEmail
                     )
                     runCatching { userRepository.saveUserData(uid, userDto) }
                         .onFailure {

@@ -2,6 +2,7 @@ package org.ivan.pokmanager.presentation.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,13 +13,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
@@ -48,7 +47,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -59,6 +61,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.ivan.pokmanager.R
+import org.ivan.pokmanager.presentation.AppLinks
 import org.ivan.pokmanager.presentation.navigation.Screen
 import org.ivan.pokmanager.presentation.ui.theme.PokeColors
 import org.ivan.pokmanager.presentation.viewmodel.RegisterScreenViewModel
@@ -76,7 +79,6 @@ fun RegisterScreen(
     val name by viewModel.name.collectAsState()
     val email by viewModel.email.collectAsState()
     val password by viewModel.password.collectAsState()
-    val birthdate by viewModel.birthdate.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val message by viewModel.message.collectAsState()
     val registerSuccess by viewModel.registerSuccess.collectAsState()
@@ -85,6 +87,7 @@ fun RegisterScreen(
     var errorMessage by remember { mutableStateOf("") }
     var isPasswordVisible by remember { mutableStateOf(false) }
     var acceptedPrivacy by remember { mutableStateOf(false) }
+    val uriHandler = LocalUriHandler.current
 
     val primaryColor = PokeColors.PokeRed
 
@@ -190,30 +193,6 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedTextField(
-                value = birthdate,
-                onValueChange = {
-                    viewModel.setBirthdate(it)
-                    showError = false
-                    viewModel.clearMessage()
-                },
-                label = { Text("Fecha de Nacimiento") },
-                placeholder = { Text("DD/MM/AAAA") },
-                leadingIcon = {
-                    Icon(Icons.Default.Cake, contentDescription = null, tint = primaryColor)
-                },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                shape = RoundedCornerShape(12.dp),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = primaryColor,
-                    unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f)
-                )
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            OutlinedTextField(
                 value = password,
                 onValueChange = {
                     viewModel.setPassword(it)
@@ -265,25 +244,29 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(32.dp))
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .toggleable(
-                        value = acceptedPrivacy,
-                        role = Role.Checkbox,
-                        onValueChange = {
-                            acceptedPrivacy = it
-                            showError = false
-                        }
-                    )
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Checkbox(
                     checked = acceptedPrivacy,
-                    onCheckedChange = null
+                    onCheckedChange = {
+                        acceptedPrivacy = it
+                        showError = false
+                    },
+                    modifier = Modifier.semantics { contentDescription = "Acepto la Política de Privacidad" }
                 )
-                Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Al registrarte aceptas nuestra Política de Privacidad",
-                    color = primaryColor
+                    text = "He leído y acepto la ",
+                    modifier = Modifier.clickable {
+                        acceptedPrivacy = !acceptedPrivacy
+                        showError = false
+                    }
+                )
+                Text(
+                    text = "Política de Privacidad",
+                    color = primaryColor,
+                    fontWeight = FontWeight.Bold,
+                    textDecoration = TextDecoration.Underline,
+                    modifier = Modifier.clickable { uriHandler.openUri(AppLinks.PRIVACY_POLICY) }
                 )
             }
 
@@ -306,12 +289,6 @@ fun RegisterScreen(
                         !email.contains("@") || !email.contains(".") -> {
                             showError = true
                             errorMessage = "Email inválido"
-                            viewModel.clearMessage()
-                        }
-
-                        birthdate.isBlank() -> {
-                            showError = true
-                            errorMessage = "Ingresa tu fecha de nacimiento"
                             viewModel.clearMessage()
                         }
 

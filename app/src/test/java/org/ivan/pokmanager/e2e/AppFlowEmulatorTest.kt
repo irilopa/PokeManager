@@ -109,11 +109,10 @@ class AppFlowEmulatorTest {
         compose.waitForText("Registrarse")
         type("Nombre", "Ash")
         type("Email", email)
-        type("Fecha de Nacimiento", "01/04/1997")
         type("Contraseña", credential)
         compose.onNodeWithText("Registrarse").performScrollTo().performClick()
         compose.waitForText("Debes aceptar la Política de Privacidad")
-        compose.onNodeWithText("Al registrarte aceptas nuestra Política de Privacidad").performScrollTo().performClick()
+        compose.onNodeWithContentDescription("Acepto la Política de Privacidad").performScrollTo().performClick()
         compose.onNodeWithText("Registrarse").performScrollTo().performClick()
 
         // Tras registrarse se entra directamente al equipo vacio (HU-04)

@@ -159,12 +159,14 @@ Screenshots are saved to `app/build/e2e-screenshots/` and `app/build/readme-scre
 Each user's data lives under their `uid`:
 
 ```text
-users/{uid}                    profile: name, email, date of birth
+users/{uid}                    profile: name and email
 users/{uid}/pokemon/{docId}    Pokémon: name, Pokédex number, types, level,
                                notes, base stats and image
 ```
 
 The rules in [`firestore.rules`](firestore.rules) only allow the authenticated owner to read and write these documents; any other access is denied.
+
+What data is collected, why, and how to delete it is explained in the [privacy policy](docs/privacy.md) (in Spanish).
 
 ## Project structure
 
