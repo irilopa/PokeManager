@@ -6,7 +6,8 @@ import org.ivan.pokmanager.domain.repository.AuthRepository
 /** AuthRepository en memoria. */
 class FakeAuthRepository(
     var uid: String? = "user-1",
-    var password: String = "secreto"
+    /** Credencial valida del usuario falso; se genera para no dejar contrasenas en el codigo. */
+    var password: String = randomCredential()
 ) : AuthRepository {
     var logoutCalls = 0
         private set
@@ -52,3 +53,6 @@ class FakeAuthRepository(
         return Result.success(Unit)
     }
 }
+
+/** Credencial aleatoria para los tests (sin textos fijos que los escaneres tomen por secretos). */
+fun randomCredential(): String = java.util.UUID.randomUUID().toString()

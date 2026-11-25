@@ -4,6 +4,7 @@ import org.ivan.pokmanager.MainDispatcherRule
 import org.ivan.pokmanager.domain.model.Pokemon
 import org.ivan.pokmanager.domain.usecase.DeleteAccountUseCase
 import org.ivan.pokmanager.fakes.FakeAuthRepository
+import org.ivan.pokmanager.fakes.randomCredential
 import org.ivan.pokmanager.fakes.FakePokemonRepository
 import org.ivan.pokmanager.fakes.FakeUserRepository
 import org.ivan.pokmanager.presentation.state.DeleteAccountState
@@ -24,7 +25,7 @@ class DeleteAccountViewModelTest {
 
     @Test
     fun `con la contrasena correcta termina en Deleted`() {
-        vm.setPassword("secreto")
+        vm.setPassword(auth.password)
         vm.deleteAccount()
 
         assertEquals(DeleteAccountState.Deleted, vm.state.value)
@@ -34,13 +35,13 @@ class DeleteAccountViewModelTest {
 
     @Test
     fun `con contrasena incorrecta muestra el error y no borra`() {
-        vm.setPassword("mala")
+        vm.setPassword(randomCredential())
         vm.deleteAccount()
 
         assertEquals(DeleteAccountState.Error("La contraseña no es correcta."), vm.state.value)
         assertEquals(1, repo.pokemonsOf("user-1").size)
 
-        vm.setPassword("secreto")
+        vm.setPassword(auth.password)
         assertEquals("escribir de nuevo limpia el error", DeleteAccountState.Idle, vm.state.value)
     }
 
@@ -54,7 +55,7 @@ class DeleteAccountViewModelTest {
 
     @Test
     fun `tras borrar ignora nuevas pulsaciones`() {
-        vm.setPassword("secreto")
+        vm.setPassword(auth.password)
         vm.deleteAccount()
         auth.log.clear()
 

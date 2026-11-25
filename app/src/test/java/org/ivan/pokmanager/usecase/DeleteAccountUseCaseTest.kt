@@ -5,6 +5,7 @@ import org.ivan.pokmanager.data.model.UserDto
 import org.ivan.pokmanager.domain.model.Pokemon
 import org.ivan.pokmanager.domain.usecase.DeleteAccountUseCase
 import org.ivan.pokmanager.fakes.FakeAuthRepository
+import org.ivan.pokmanager.fakes.randomCredential
 import org.ivan.pokmanager.fakes.FakePokemonRepository
 import org.ivan.pokmanager.fakes.FakeUserRepository
 import org.junit.Assert.assertEquals
@@ -29,7 +30,7 @@ class DeleteAccountUseCaseTest {
 
     @Test
     fun `borra los Pokemon, el perfil y la cuenta en ese orden`() = runTest {
-        val result = deleteAccount("secreto")
+        val result = deleteAccount(auth.password)
 
         assertTrue(result.isSuccess)
         assertEquals(listOf("reauthenticate", "deleteAllPokemon", "deleteProfile", "deleteAccount"), log)
@@ -40,7 +41,7 @@ class DeleteAccountUseCaseTest {
 
     @Test
     fun `con contrasena incorrecta no borra nada`() = runTest {
-        val result = deleteAccount("otra")
+        val result = deleteAccount(randomCredential())
 
         assertEquals("La contraseña no es correcta.", result.exceptionOrNull()?.message)
         assertEquals(listOf("reauthenticate"), log)
@@ -53,7 +54,7 @@ class DeleteAccountUseCaseTest {
     fun `si falla el borrado de datos la cuenta sigue activa`() = runTest {
         pokemons.failDeleteAll = true
 
-        val result = deleteAccount("secreto")
+        val result = deleteAccount(auth.password)
 
         assertEquals(DeleteAccountUseCase.DATA_ERROR_MESSAGE, result.exceptionOrNull()?.message)
         assertFalse(auth.accountDeleted)
@@ -64,7 +65,7 @@ class DeleteAccountUseCaseTest {
     fun `si falla el borrado de la cuenta avisa de que los datos ya se borraron`() = runTest {
         auth.failDeleteAccount = true
 
-        val result = deleteAccount("secreto")
+        val result = deleteAccount(auth.password)
 
         assertEquals(DeleteAccountUseCase.ACCOUNT_ERROR_MESSAGE, result.exceptionOrNull()?.message)
         assertTrue(pokemons.pokemonsOf("user-1").isEmpty())
@@ -74,7 +75,7 @@ class DeleteAccountUseCaseTest {
     fun `sin sesion devuelve error sin tocar nada`() = runTest {
         auth.uid = null
 
-        val result = deleteAccount("secreto")
+        val result = deleteAccount(auth.password)
 
         assertTrue(result.isFailure)
         assertTrue(log.isEmpty())
