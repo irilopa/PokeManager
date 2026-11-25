@@ -15,6 +15,7 @@ PokéManager es una aplicación Android personal, educativa y sin ánimo de lucr
 | Email y contraseña | Crear tu cuenta e iniciar sesión. La contraseña la gestiona Firebase Authentication y nunca se guarda en texto legible. | Sí |
 | Nombre | Mostrarlo en tu perfil. | Sí |
 | Tu colección de Pokémon (nombre, número, tipos, nivel, notas y estadísticas) | Guardar y mostrar tu colección en cualquier dispositivo en el que inicies sesión. | No: solo lo que tú añadas |
+| Informes de fallos (dispositivo, versión de Android y de la app, error) | Detectar y corregir errores de la app. | Se envían automáticamente si la app falla |
 
 La app **no** recoge tu ubicación, tus contactos ni tus fotos, **no** muestra publicidad y **no** vende ni comparte tus datos con terceros con fines comerciales.
 
@@ -26,6 +27,8 @@ Los datos se guardan en servicios de **Google Firebase**, que actúa como encarg
 - **Cloud Firestore**: tu perfil y tu colección, en `users/{tu-id}`. Las reglas de seguridad solo permiten que tú leas y escribas tus propios datos.
 
 Puedes consultar la [política de privacidad de Google](https://policies.google.com/privacy) y los [compromisos de privacidad de Firebase](https://firebase.google.com/support/privacy).
+
+Si la app falla, **Firebase Crashlytics** envía un informe técnico del error para poder corregirlo: el modelo del dispositivo, la versión de Android y de la app, y dónde falló el código. Estos informes no incluyen tu email, tu nombre ni tu colección, y Google los conserva 90 días.
 
 Al buscar un Pokémon por nombre, la app consulta la [PokéAPI](https://pokeapi.co/), un servicio público. Esa consulta solo incluye el nombre del Pokémon, no tus datos personales.
 

@@ -130,6 +130,10 @@ data          →  Firebase (Auth, Firestore) and PokéAPI (Retrofit) implementa
 
 The app needs no environment variables or extra keys: Firebase is configured with `google-services.json` and PokéAPI is public.
 
+### Release
+
+The release build is optimized with R8 and reports crashes to Firebase Crashlytics. On GitHub Actions, the "Build de publicación" job produces an APK to test on a phone on every run and, if the `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` and `ANDROID_KEY_PASSWORD` secrets are set, the signed AAB for Google Play. The signing key is never stored in the repository.
+
 ## Testing
 
 | Type | What it covers | Command |

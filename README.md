@@ -130,6 +130,10 @@ data          →  implementaciones con Firebase (Auth, Firestore) y PokéAPI (R
 
 La app no necesita variables de entorno ni claves adicionales: Firebase se configura con `google-services.json` y la PokéAPI es pública.
 
+### Publicación
+
+La versión de publicación se optimiza con R8 y envía los fallos a Firebase Crashlytics. En GitHub Actions, el job «Build de publicación» genera en cada ejecución un APK para probar en un móvil y, si están configurados los secretos `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` y `ANDROID_KEY_PASSWORD`, el AAB firmado para Google Play. La clave de firma nunca se guarda en el repositorio.
+
 ## Pruebas
 
 | Tipo | Qué cubre | Comando |
