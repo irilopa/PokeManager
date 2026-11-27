@@ -1,0 +1,53 @@
+name: 💡 Proponer una mejora
+description: Una idea para una función nueva o para mejorar una existente.
+title: "[Mejora]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Mira antes la [hoja de ruta del README](https://github.com/irilopa/PokeManager#hoja-de-ruta): puede que tu idea ya esté prevista.
+
+  - type: textarea
+    id: problema
+    attributes:
+      label: ¿Qué problema resuelve?
+      description: Explica la situación, no la solución. Por ejemplo, «cuando tengo muchos Pokémon me cuesta…».
+      placeholder: Cuando quiero preparar un combate no sé qué Pokémon de mi colección cubren las debilidades de los demás.
+    validations:
+      required: true
+
+  - type: textarea
+    id: solucion
+    attributes:
+      label: ¿Qué propones?
+      description: Cómo te imaginas que funcionaría en la app.
+      placeholder: Un apartado de equipos de hasta 6 Pokémon que avise si varios comparten una debilidad.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: ¿A qué parte de la app afecta?
+      options:
+        - Colección y búsqueda
+        - Detalle del Pokémon
+        - Equipos de combate
+        - Cuenta y privacidad
+        - Apariencia y accesibilidad
+        - Otra
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternativas
+    attributes:
+      label: Alternativas que has considerado
+      description: Otras formas de resolverlo o cómo lo haces ahora.
+
+  - type: textarea
+    id: contexto
+    attributes:
+      label: Contexto adicional
+      description: Bocetos, capturas o ejemplos de otras apps.

@@ -1,0 +1,9 @@
+# Solo se pueden abrir issues con las plantillas, para recibir siempre la información necesaria.
+blank_issues_enabled: false
+contact_links:
+  - name: 🔒 Privacidad o borrado de datos
+    url: https://github.com/irilopa/PokeManager/blob/master/docs/privacy.md
+    about: Qué datos guarda la app y cómo borrar tu cuenta. No publiques datos personales en un issue.
+  - name: 📋 Historial de bugs
+    url: https://github.com/irilopa/PokeManager/blob/master/docs/bugs.md
+    about: Bugs ya corregidos, con su causa y el test que evita que vuelvan.
