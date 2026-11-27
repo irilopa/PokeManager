@@ -1,0 +1,106 @@
+name: 🐞 Informar de un bug
+description: Algo no funciona como debería en la app.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por avisar. Antes de enviarlo, mira si ya está en los [issues abiertos](https://github.com/irilopa/PokeManager/issues) o en el [historial de bugs](https://github.com/irilopa/PokeManager/blob/master/docs/bugs.md).
+
+        ⚠️ **No escribas nunca tu contraseña ni datos personales** (email, nombre) en el issue: es público.
+
+  - type: textarea
+    id: descripcion
+    attributes:
+      label: ¿Qué ha pasado?
+      description: Describe el problema en una o dos frases.
+      placeholder: Al guardar un Pokémon con dos tipos, la app vuelve a la lista pero el Pokémon no aparece.
+    validations:
+      required: true
+
+  - type: textarea
+    id: pasos
+    attributes:
+      label: Pasos para reproducirlo
+      description: Lo que hay que hacer, desde abrir la app, para que ocurra.
+      placeholder: |
+        1. Inicia sesión.
+        2. Pulsa «+» para añadir un Pokémon.
+        3. Elige «Agua» como tipo principal y «Volador» como secundario.
+        4. Pulsa «Guardar Pokémon».
+    validations:
+      required: true
+
+  - type: textarea
+    id: esperado
+    attributes:
+      label: ¿Qué esperabas que pasara?
+      placeholder: Que el Pokémon apareciera en la lista con sus dos tipos.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: frecuencia
+    attributes:
+      label: ¿Con qué frecuencia ocurre?
+      options:
+        - Siempre
+        - A veces
+        - Solo ha pasado una vez
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: ¿En qué parte de la app?
+      options:
+        - Registro o inicio de sesión
+        - Lista del equipo (búsqueda y filtros)
+        - Añadir o editar un Pokémon
+        - Detalle (estadísticas, tipos, debilidades)
+        - Cuenta (cerrar sesión, recuperar contraseña, eliminar cuenta)
+        - Otra
+    validations:
+      required: true
+
+  - type: input
+    id: version-app
+    attributes:
+      label: Versión de la app
+      description: En Ajustes de Android → Aplicaciones → PokéManager.
+      placeholder: "1.12"
+
+  - type: input
+    id: dispositivo
+    attributes:
+      label: Móvil y versión de Android
+      placeholder: Pixel 8, Android 15
+    validations:
+      required: true
+
+  - type: dropdown
+    id: tema
+    attributes:
+      label: Tema del sistema
+      options:
+        - Claro
+        - Oscuro
+        - No lo sé
+
+  - type: textarea
+    id: capturas
+    attributes:
+      label: Capturas o vídeo
+      description: Arrastra aquí las imágenes. Tapa cualquier dato personal antes de subirlas.
+
+  - type: checkboxes
+    id: comprobaciones
+    attributes:
+      label: Comprobaciones
+      options:
+        - label: He buscado en los issues y en el historial de bugs y no está ya informado.
+          required: true
+        - label: No he incluido contraseñas ni datos personales.
+          required: true

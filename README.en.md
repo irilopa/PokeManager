@@ -215,11 +215,11 @@ Contributions are welcome:
 
 1. Fork the repository and create a branch from `master` (`git checkout -b feature/my-improvement`).
 2. Add or update the relevant tests and make sure `./gradlew testDebugUnitTest` passes.
-3. Open a pull request describing the change and include screenshots if it affects the UI.
+3. Open a pull request: the template asks what changes, how it was tested and a checklist. Include screenshots if it affects the UI.
 
 The README exists in Spanish ([README.md](README.md)) and English (this file). The Spanish version is the source: when a change is merged into `master`, the `README translate` workflow translates the differences with the Claude API and opens a pull request with the updated `README.en.md`. The `README sync` check verifies that both versions keep the same structure.
 
-For bugs or ideas, open an [issue](https://github.com/irilopa/PokeManager/issues). Fixed bugs, with their cause and the test that prevents them from returning, are listed in the [bug history](docs/bugs.md) (in Spanish).
+For bugs or ideas, open an [issue](https://github.com/irilopa/PokeManager/issues/new/choose) using the bug or enhancement template. Fixed bugs, with their cause and the test that prevents them from returning, are listed in the [bug history](docs/bugs.md) (in Spanish).
 
 ## Author
 
